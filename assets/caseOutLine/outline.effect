@@ -1,0 +1,125 @@
+// Effect Syntax Guide: https://github.com/cocos-creator/docs-3d/blob/master/zh/material-system/effect-syntax.md
+
+CCEffect %{
+  techniques:
+  - name: color
+    passes:
+    - vert: standard-vs:vert
+      frag: standard-fs:frag
+      properties: &props
+        ambient:       { value: [1, 1, 1, 1], editor: { type: color } }
+    - vert: sc-outline-vs:vert
+      frag: sc-outline-fs:frag
+      properties:
+        rimColor:       { value: [1, 1, 1, 1], editor: { type: color } }
+        outlineParams:  { value: [1, 1, 1, 1], editor: { type: vec4  } }
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendSrcAlpha: src_alpha
+          blendDstAlpha: one_minus_src_alpha
+}%
+
+
+CCProgram standard-vs %{
+  precision highp float;
+  #include <cc-global>
+  #include <cc-local-batch>
+  #include <input-standard>
+  #include <cc-fog-vs>
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCVertInput(In);
+
+    mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+
+    // v_normal = normalize((matWorldIT * vec4(In.normal, 0.0)).xyz);
+    // v_uv = a_texCoord * tilingOffset.xy + tilingOffset.zw;
+
+    return cc_matProj * (cc_matView * matWorld) * In.position;
+  }
+}%
+
+CCProgram standard-fs %{
+  precision highp float;
+  #include <output>
+
+  uniform Constants {
+    vec4 ambient;
+  };
+
+  vec4 frag () {
+    vec4 color = ambient;
+
+    return CCFragOutput(color);
+  }
+}%
+
+CCProgram sc-outline-vs %{
+  precision highp float;
+  #include <cc-global>
+  #include <cc-local-batch>
+  #include <input-standard>
+  #include <cc-fog-vs>
+
+  out vec3 scNormal;
+  out vec4 scWorldPos;
+
+  uniform Constants {
+    vec4 rimColor;
+    vec4 outlineParams;
+  };
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCVertInput(In);
+
+    scNormal = In.normal;
+    vec4 pos = In.position;
+    pos.w = 1.;
+    pos.xyz += In.normal * outlineParams.z;
+
+    mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+    scWorldPos = matWorld * pos;
+
+    return cc_matProj * (cc_matView * matWorld) * pos;
+  }
+}%
+
+CCProgram sc-outline-fs %{
+  precision highp float;
+  #include <output>
+  #include <cc-fog-fs>
+  #include <common>
+
+  in vec3 scNormal;
+  in vec4 scWorldPos;
+
+  uniform Constants {
+    vec4 rimColor;
+    vec4 outlineParams;
+  };
+
+  vec4 frag () {
+    vec4 color = rimColor;
+    vec3 V = normalize(scWorldPos.xyz - cc_cameraPos.xyz);
+    vec3 N = normalize(scNormal);
+    float dotVal = dot(V, N);
+    dotVal = saturate(dotVal);
+    // color.a = pow(dotVal, outlineParams.x);
+		// color.a *=  outlineParams.y * dotVal;
+    if (dotVal < 0.001) {
+      dotVal = 0.5;
+    }
+    color.a = dotVal; // saturate(1. - color.a);
+
+    // CC_APPLY_FOG(color);
+    return CCFragOutput(color);
+  }
+
+}%
