@@ -26,12 +26,12 @@ CCEffect %{
       migrations:
         properties:
           pbrParams: { removeImmediately: true }
-    - &fx-outline
-      vert: fx-outline-vs:vert
-      frag: fx-outline-fs:frag
+    - &fx-innergrow
+      vert: fx-innergrow-vs:vert
+      frag: fx-innergrow-fs:frag
       properties:
-        rimColor:       { value: [1, 0, 0, 1], editor: { type: color } }
-        outlineParams:  { value: [0.1, 0.8, 0.1, 1], editor: { type: vec4  } }
+        rimColor:         { value: [1, 0, 0, 1],     editor: { type: color } }
+        innergrowParams:  { value: [0.1, 2, 0.1, 1], editor: { type: vec4  } }
       blendState:
         targets:
         - blend: true
@@ -90,7 +90,6 @@ CCEffect %{
         mainTexture:    { value: grey, target: albedoMap, editor: { displayName: AlbedoMap } }
   - name: transparent
     passes:
-    - *fx-outline
     - vert: standard-vs
       frag: standard-fs
       depthStencilState:
@@ -103,6 +102,7 @@ CCEffect %{
           blendDst: one_minus_src_alpha
           blendDstAlpha: one_minus_src_alpha
       properties: *props
+    - *fx-innergrow
     - *forward-add
     - *shadow-caster
 }%
@@ -396,7 +396,7 @@ CCProgram shadow-caster-fs %{
   }
 }%
 
-CCProgram fx-outline-vs %{
+CCProgram fx-innergrow-vs %{
   precision highp float;
   #include <cc-global>
   #include <cc-local-batch>
@@ -408,7 +408,7 @@ CCProgram fx-outline-vs %{
 
   uniform Constants {
     vec4 rimColor;
-    vec4 outlineParams; //x: pow, y:, z: outline width
+    vec4 innergrowParams; //x: pow, y:, z: outline width
   };
 
   vec4 vert () {
@@ -417,9 +417,6 @@ CCProgram fx-outline-vs %{
 
     scNormal = In.normal;
     vec4 pos = In.position;
-    pos.w = 1.;
-    pos.xyz += In.normal * outlineParams.z;
-
     mat4 matWorld, matWorldIT;
     CCGetWorldMatrixFull(matWorld, matWorldIT);
     scWorldPos = matWorld * pos;
@@ -430,7 +427,7 @@ CCProgram fx-outline-vs %{
   }
 }%
 
-CCProgram fx-outline-fs %{
+CCProgram fx-innergrow-fs %{
   precision highp float;
   #include <output>
   #include <cc-fog-fs>
@@ -441,7 +438,7 @@ CCProgram fx-outline-fs %{
 
   uniform Constants {
     vec4 rimColor;
-    vec4 outlineParams;
+    vec4 innergrowParams;
   };
 
   vec4 frag () {
@@ -450,9 +447,9 @@ CCProgram fx-outline-fs %{
     vec3 N = normalize(scNormal);
     float dotVal = dot(V, N);
     dotVal = saturate(dotVal);
-    color.a = pow(dotVal, outlineParams.x);
-		color.a *=  outlineParams.y * dotVal;
-    color.a = clamp(color.a, 0., 0.8);
+    color.a = pow(dotVal, innergrowParams.x);
+		color.a *=  innergrowParams.y * dotVal;
+    color.a = 1. - color.a;
 
     return CCFragOutput(color);
   }
