@@ -22,9 +22,6 @@
       },
       {
         "__id__": 7
-      },
-      {
-        "__id__": 11
       }
     ],
     "_active": true,
@@ -32,7 +29,7 @@
     "_prefab": null,
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 15
+      "__id__": 11
     },
     "_id": "45f5528a-175e-4459-a697-aa9c1b0e7200"
   },
@@ -288,111 +285,18 @@
     "_lightmapSize": 64
   },
   {
-    "__type__": "cc.Node",
-    "_name": "Cube",
-    "_objFlags": 0,
-    "_parent": {
-      "__id__": 1
-    },
-    "_children": [],
-    "_active": true,
-    "_components": [
-      {
-        "__id__": 12
-      }
-    ],
-    "_prefab": null,
-    "_lpos": {
-      "__type__": "cc.Vec3",
-      "x": -8.037,
-      "y": 7.027,
-      "z": 7.27
-    },
-    "_lrot": {
-      "__type__": "cc.Quat",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "w": 1
-    },
-    "_lscale": {
-      "__type__": "cc.Vec3",
-      "x": 1,
-      "y": 1,
-      "z": 1
-    },
-    "_layer": 1073741824,
-    "_euler": {
-      "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "_id": "54qUL2z3pAc7V/Rdct/4Ms"
-  },
-  {
-    "__type__": "cc.MeshRenderer",
-    "_name": "Cube<ModelComponent>",
-    "_objFlags": 0,
-    "node": {
-      "__id__": 11
-    },
-    "_enabled": true,
-    "__prefab": {
-      "__id__": 13
-    },
-    "_materials": [
-      {
-        "__uuid__": "d3c7820c-2a98-4429-8bc7-b8453bc9ac41",
-        "__expectedType__": "cc.Material"
-      }
-    ],
-    "_visFlags": 0,
-    "lightmapSettings": {
-      "__id__": 14
-    },
-    "_mesh": {
-      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@a804a",
-      "__expectedType__": "cc.Mesh"
-    },
-    "_shadowCastingMode": 0,
-    "_shadowReceivingMode": 1,
-    "_enableMorph": true,
-    "_id": "97v7pakY5E3aLTWNidu4Th"
-  },
-  {
-    "__type__": "cc.CompPrefabInfo",
-    "fileId": "e8DOT5UJ1F/ZgplWYyCxRs"
-  },
-  {
-    "__type__": "cc.ModelLightmapSettings",
-    "texture": null,
-    "uvParam": {
-      "__type__": "cc.Vec4",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "w": 0
-    },
-    "_bakeable": false,
-    "_castShadow": false,
-    "_receiveShadow": false,
-    "_recieveShadow": false,
-    "_lightmapSize": 64
-  },
-  {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 16
+      "__id__": 12
     },
     "shadows": {
-      "__id__": 17
+      "__id__": 13
     },
     "_skybox": {
-      "__id__": 18
+      "__id__": 14
     },
     "fog": {
-      "__id__": 19
+      "__id__": 15
     }
   },
   {

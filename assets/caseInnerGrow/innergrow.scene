@@ -208,9 +208,9 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 0,
-      "z": 0
+      "x": -5.065,
+      "y": 5.846,
+      "z": 5.407
     },
     "_lrot": {
       "__type__": "cc.Quat",
@@ -232,7 +232,7 @@
       "y": 0,
       "z": 0
     },
-    "_id": "397MjMmC1K5pAhd7hiMFX/"
+    "_id": "3a06yISRRAfoTYEyXJCEmf"
   },
   {
     "__type__": "cc.MeshRenderer",
@@ -262,7 +262,7 @@
     "_shadowCastingMode": 0,
     "_shadowReceivingMode": 1,
     "_enableMorph": true,
-    "_id": "235zhgE51B66kjjmt2hKqY"
+    "_id": "2cjUMqKYlIiavK393RZOLb"
   },
   {
     "__type__": "cc.CompPrefabInfo",
