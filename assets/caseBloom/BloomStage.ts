@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, ForwardStage, renderer, getPhaseID, gfx, pipeline } from 'cc';
+import { _decorator, Component, Node, ForwardStage, renderer, getPhaseID, gfx, pipeline, ForwardPipeline, ForwardFlow } from 'cc';
 const { ccclass, property } = _decorator;
 
 const _samplerInfo = [
@@ -22,6 +22,7 @@ class BloomRenderData {
 @ccclass('BloomStage')
 export class BloomStage extends ForwardStage {
 
+    private _generated: boolean = false;
     private _device: gfx.Device|null = null;
     private _bloomRenderData: BloomRenderData|null = null;
     private _gbufferRenderPass: gfx.RenderPass | null = null;
@@ -29,7 +30,8 @@ export class BloomStage extends ForwardStage {
 
     constructor() {
         super();
-        this._phaseID = getPhaseID('default');
+        this._name = "BloomStage";
+        this._phaseID = getPhaseID('bloom');
     }
 
     public get device(): gfx.Device|null {
@@ -48,7 +50,26 @@ export class BloomStage extends ForwardStage {
         this._descriptorSet = d;
     }
 
+    public activate (pipeline: ForwardPipeline, flow: ForwardFlow) {
+        super.activate(pipeline, flow);
+        if (!this._generated) {
+            this.generateOffFrameBuffer();
+            this._generated = true;
+        }
+    }
+
     public render (camera: renderer.scene.Camera): void {
+        if (null == camera.window) { return; }
+        if (null == this._bloomRenderData) { return; }
+        if (null == this._bloomRenderData.gbufferFrameBuffer) { return; }
+
+        console.log('bloom stage renderer');
+        const originWin = camera.window;
+        camera.window = {
+            framebuffer: this._bloomRenderData.gbufferFrameBuffer
+        }
+        super.render(camera);
+        camera.window = originWin;
     }
 
     private generateOffFrameBuffer () {
