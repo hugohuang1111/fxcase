@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, ForwardStage, renderer, getPhaseID, gfx, pipeline, ForwardPipeline, ForwardFlow } from 'cc';
+import { _decorator, Component, Node, ForwardStage, renderer, getPhaseID, gfx, pipeline, ForwardPipeline, ForwardFlow, CCLoader, find, Sprite, Size, UITransform } from 'cc';
 const { ccclass, property } = _decorator;
 
 const _samplerInfo = [
@@ -27,6 +27,8 @@ export class BloomStage extends ForwardStage {
     private _bloomRenderData: BloomRenderData|null = null;
     private _gbufferRenderPass: gfx.RenderPass | null = null;
     private _descriptorSet: gfx.DescriptorSet | null = null;
+
+    private _testNode: Node | null = null;
 
     constructor() {
         super();
@@ -70,6 +72,29 @@ export class BloomStage extends ForwardStage {
         }
         super.render(camera);
         camera.window = originWin;
+
+        this.apply2TestSprite(this._bloomRenderData.gbufferFrameBuffer);
+    }
+
+    private apply2TestSprite(fb: gfx.Framebuffer): void {
+        if (null == this._testNode) {
+            this._testNode = find("Canvas/bloomfb");
+        }
+        if (null == this._testNode) {
+            return;
+        }
+        const sprite = this._testNode.getComponent(Sprite);
+        if (null == sprite) { return; }
+        if (null == sprite.spriteFrame) { return; }
+        if (null != fb.colorTextures && fb.colorTextures.length > 0) {
+            sprite.spriteFrame.texture = fb.colorTextures[0];
+        }
+        sprite.material?.setProperty('TestTexture',renderTarget);
+        // const ui = sprite.getComponent(UITransform);
+        // let size=new Size(this._renderArea.width, this._renderArea.height);
+        // size.width=size.width/cc.view.getScaleX();
+        // size.height=size.height/cc.view.getScaleY();
+        // ui?.setContentSize(size);
     }
 
     private generateOffFrameBuffer () {
