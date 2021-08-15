@@ -206,6 +206,9 @@
     },
     "_enabled": true,
     "__prefab": null,
+    "bloomThressholdMat": null,
+    "bloomBlurMat": null,
+    "bloomMergeMat": null,
     "_id": "daRhOWBDhFs518m1Lxe++j"
   },
   {
@@ -375,7 +378,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": -421.785,
+      "y": 0,
       "z": 1000
     },
     "_lrot": {

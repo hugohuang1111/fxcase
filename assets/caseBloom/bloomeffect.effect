@@ -30,9 +30,6 @@ CCEffect %{
       vert: fx-bloom-vs:vert
       frag: fx-bloom-fs:frag
       phase: bloom
-      properties:
-        rimColor:     { value: [1, 0, 0, 1],     editor: { type: color } }
-        bloomParams:  { value: [0.1, 2, 0.1, 1], editor: { type: vec4  } }
       blendState:
         targets:
         - blend: true
@@ -402,29 +399,19 @@ CCProgram fx-bloom-vs %{
   #include <cc-global>
   #include <cc-local-batch>
   #include <input-standard>
-  #include <cc-fog-vs>
 
-  out vec3 scNormal;
-  out vec4 scWorldPos;
-
-  uniform Constants {
-    vec4 rimColor;
-    vec4 bloomParams; //x: pow, y:, z: outline width
-  };
+  out vec2 v_uv;
 
   vec4 vert () {
     StandardVertInput In;
     CCVertInput(In);
 
-    scNormal = In.normal;
-    vec4 pos = In.position;
     mat4 matWorld, matWorldIT;
     CCGetWorldMatrixFull(matWorld, matWorldIT);
-    scWorldPos = matWorld * pos;
-    scNormal = normalize((matWorldIT * vec4(scNormal, 0.0)).xyz);
 
-    pos = cc_matProj * (cc_matView * matWorld) * pos;
-    return pos;
+    v_uv = a_texCoord;
+
+    return cc_matProj * (cc_matView * matWorld) * In.position;
   }
 }%
 
@@ -434,23 +421,18 @@ CCProgram fx-bloom-fs %{
   #include <cc-fog-fs>
   #include <common>
 
-  in vec3 scNormal;
-  in vec4 scWorldPos;
+  in vec2 v_uv;
 
-  uniform Constants {
-    vec4 rimColor;
-    vec4 bloomParams;
-  };
+  #pragma builtin(global)
+  layout (set = 0, binding = 0) uniform sampler2D albedoResultMap;
 
   vec4 frag () {
-    vec4 color = rimColor;
-    vec3 V = normalize(cc_cameraPos.xyz - scWorldPos.xyz);
-    vec3 N = normalize(scNormal);
-    float dotVal = dot(V, N);
-    dotVal = saturate(dotVal);
-    color.a = pow(dotVal, bloomParams.x);
-		color.a *=  bloomParams.y * dotVal;
-    color.a = 1. - color.a;
+    vec4 color = texture2D(albedoResultMap, v_uv);
+    float gray = color.r * .299 + color.g * .587 + color.b * .114;
+
+    if (gray < 0.6) {
+      color = vec4(0., 0., 0., 1.0);
+    }
 
     return CCFragOutput(color);
   }
