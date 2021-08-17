@@ -22,6 +22,10 @@ class BloomRenderData {
     bloomFrameBuffer: gfx.Framebuffer | null = null;
     bloomRenderTargets: gfx.Texture[] = [];
 
+    bloomRenderPass2: gfx.RenderPass | null = null;
+    bloomFrameBuffer2: gfx.Framebuffer | null = null;
+    bloomRenderTargets2: gfx.Texture[] = [];
+
     depthTex: gfx.Texture | null = null;
 }
 
@@ -132,14 +136,16 @@ export class Bloom extends Component {
                 bs.bloom = this;
                 bs.framebuffer = this.bloomData.bloomFrameBuffer;
                 bs.activate(fpl, ff);
+                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.gbufferFrameBuffer!.colorTextures[0]!);
                 ff.stages.push(bs);
 
                 bs = new BloomBlurStage();
                 bs.initialize(ForwardStage.initInfo);
                 bs.bloomMat = this.bloomBlurMat;
                 bs.bloom = this;
-                bs.framebuffer = this.bloomData.bloomFrameBuffer;
+                bs.framebuffer = this.bloomData.bloomFrameBuffer2;
                 bs.activate(fpl, ff);
+                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.bloomFrameBuffer!.colorTextures[0]!);
                 ff.stages.push(bs);
 
                 bs = new BloomMergeStage();
@@ -148,6 +154,8 @@ export class Bloom extends Component {
                 bs.bloom = this;
                 bs.framebuffer = null;
                 bs.activate(fpl, ff);
+                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_LIGHTMAP_TEXTURE_BINDING, this.bloomData.bloomFrameBuffer2!.colorTextures[0]!);
+                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.gbufferFrameBuffer!.colorTextures[0]!)
                 ff.stages.push(bs);
 
                 break;
@@ -219,6 +227,23 @@ export class Bloom extends Component {
             bloomData.bloomRenderPass = device.createRenderPass(renderPassInfo);
         }
 
+        if (null == bloomData.bloomRenderPass2) {
+            const colorAttachment0 = new gfx.ColorAttachment();
+            colorAttachment0.format = gfx.Format.RGBA16F;
+            colorAttachment0.loadOp = gfx.LoadOp.CLEAR; // should clear color attachment
+            colorAttachment0.storeOp = gfx.StoreOp.STORE;
+
+            const depthStencilAttachment = new gfx.DepthStencilAttachment();
+            depthStencilAttachment.format = device.depthStencilFormat;
+            depthStencilAttachment.depthLoadOp = gfx.LoadOp.CLEAR;
+            depthStencilAttachment.depthStoreOp = gfx.StoreOp.STORE;
+            depthStencilAttachment.stencilLoadOp = gfx.LoadOp.CLEAR;
+            depthStencilAttachment.stencilStoreOp = gfx.StoreOp.STORE;
+            const renderPassInfo = new gfx.RenderPassInfo([colorAttachment0],
+                depthStencilAttachment);
+            bloomData.bloomRenderPass2 = device.createRenderPass(renderPassInfo);
+        }
+
         bloomData.gbufferRenderTargets.push(device.createTexture(new gfx.TextureInfo(
             gfx.TextureType.TEX2D,
             gfx.TextureUsageBit.COLOR_ATTACHMENT | gfx.TextureUsageBit.SAMPLED,
@@ -252,6 +277,20 @@ export class Bloom extends Component {
         bloomData.bloomFrameBuffer = device.createFramebuffer(new gfx.FramebufferInfo(
             bloomData.bloomRenderPass!,
             bloomData.bloomRenderTargets,
+            bloomData.depthTex,
+        ));
+
+        bloomData.bloomRenderTargets2.push(device.createTexture(new gfx.TextureInfo(
+            gfx.TextureType.TEX2D,
+            gfx.TextureUsageBit.COLOR_ATTACHMENT | gfx.TextureUsageBit.SAMPLED,
+            gfx.Format.RGBA16F,
+            width,
+            height,
+        )));
+
+        bloomData.bloomFrameBuffer2 = device.createFramebuffer(new gfx.FramebufferInfo(
+            bloomData.bloomRenderPass2!,
+            bloomData.bloomRenderTargets2,
             bloomData.depthTex,
         ));
 

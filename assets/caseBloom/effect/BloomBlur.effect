@@ -1,0 +1,26 @@
+
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: general-vs:vert
+      frag: unlit-fs:frag
+}%
+
+CCProgram unlit-fs %{
+  precision highp float;
+  #include <output>
+  #include <cc-fog-fs>
+
+  in vec2 v_uv;
+  #pragma builtin(local)
+  layout(set = 2, binding = 9) uniform sampler2D cc_lightingMap;
+  #pragma builtin(local)
+  layout(set = 2, binding = 10) uniform sampler2D cc_spriteTexture;
+
+  vec4 frag () {
+    vec4 col = texture(cc_spriteTexture, v_uv);
+    CC_APPLY_FOG(col);
+    return CCFragOutput(col);
+  }
+}%

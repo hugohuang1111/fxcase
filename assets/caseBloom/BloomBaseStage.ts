@@ -29,6 +29,7 @@ export class BloomBaseStage extends RenderStage {
     private _bloomMat: Material|null = null;
     private _bloom: Bloom | null = null;
     private _framebuffer: gfx.Framebuffer | null = null;
+    private _descriptorSet: gfx.DescriptorSet | null = null;
 
     constructor() {
         super();
@@ -56,9 +57,21 @@ export class BloomBaseStage extends RenderStage {
         this._framebuffer = val;
     }
 
+    get descriptorSet() {
+        return this._descriptorSet;
+    }
+    set descriptorSet(val) {
+        this._descriptorSet = val;
+    }
+
     public activate (pl: ForwardPipeline, flow: ForwardFlow) {
         super.activate(pl, flow);
         const device = pl.device;
+
+        const layoutInfo = new gfx.DescriptorSetLayoutInfo(pipeline.localDescriptorSetLayout.bindings);
+        const layout = device.createDescriptorSetLayout(layoutInfo);
+        const descSetInfo = new gfx.DescriptorSetInfo(layout);
+        this._descriptorSet = device.createDescriptorSet(descSetInfo);
     }
 
     public render (camera: renderer.scene.Camera): void {
@@ -85,7 +98,10 @@ export class BloomBaseStage extends RenderStage {
         }
         colors[0].w = camera.clearColor.w;
 
-        // cmdBuff.bindDescriptorSet(pipeline.SetIndex.LOCAL, this._descriptorSet, dynamicOffsets);
+        if (this._descriptorSet) {
+            const dynamicOffsets: number[] = [0];
+            cmdBuff.bindDescriptorSet(pipeline.SetIndex.LOCAL, this._descriptorSet, dynamicOffsets);
+        }
         cmdBuff.bindDescriptorSet(pipeline.SetIndex.GLOBAL, pl.descriptorSet);
 
         cmdBuff.beginRenderPass(rp, fb, renderArea,

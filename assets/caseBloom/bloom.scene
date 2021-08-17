@@ -206,9 +206,18 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "bloomThressholdMat": null,
-    "bloomBlurMat": null,
-    "bloomMergeMat": null,
+    "bloomThressholdMat": {
+      "__uuid__": "e29e92cd-e2e7-4c92-947b-0b868745dc1c",
+      "__expectedType__": "cc.Material"
+    },
+    "bloomBlurMat": {
+      "__uuid__": "7197e72a-8727-437c-9dba-067fbf966058",
+      "__expectedType__": "cc.Material"
+    },
+    "bloomMergeMat": {
+      "__uuid__": "3604ea5b-e63d-412d-9f3f-f5356dcba555",
+      "__expectedType__": "cc.Material"
+    },
     "_id": "daRhOWBDhFs518m1Lxe++j"
   },
   {
