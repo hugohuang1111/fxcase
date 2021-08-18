@@ -3,11 +3,33 @@ CCEffect %{
   techniques:
   - name: opaque
     passes:
-    - vert: general-vs:vert
-      frag: unlit-fs:frag
+    - vert: fx-bloom-merge-vs:vert
+      frag: fx-bloom-merge-fs:frag
 }%
 
-CCProgram unlit-fs %{
+CCProgram fx-bloom-merge-vs %{
+  precision highp float;
+  #include <cc-global>
+  #include <cc-local-batch>
+  #include <input-standard>
+  #include <cc-fog-vs>
+
+  out vec2 v_uv;
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCVertInput(In);
+
+    mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+
+    v_uv = a_texCoord;
+
+    return cc_matProj * (cc_matView * matWorld) * In.position;
+  }
+}%
+
+CCProgram fx-bloom-merge-fs %{
   precision highp float;
   #include <output>
   #include <cc-fog-fs>
@@ -21,6 +43,9 @@ CCProgram unlit-fs %{
   vec4 frag () {
     vec4 col = texture(cc_spriteTexture, v_uv);
     CC_APPLY_FOG(col);
-    return CCFragOutput(col);
+
+    col = vec4(1., 0., 0., 1.);
+    // return CCFragOutput(col);
+    return col;
   }
 }%

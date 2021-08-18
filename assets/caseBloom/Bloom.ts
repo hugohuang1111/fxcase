@@ -74,8 +74,8 @@ export class Bloom extends Component {
     }
 
     start () {
-        //this.addCustomRendererStage();
         this.hackPipelineRender();
+        this.addCustomRendererStage();
     }
 
     hackPipelineRender() {
@@ -87,29 +87,29 @@ export class Bloom extends Component {
         const originRender = pl.render;
         const self = this;
         this._bloomData = self.generateBloomFrameBufferData(pl);
-        pl.render = function(cameras: renderer.scene.Camera[]) {
-            for (const c of cameras) {
-                if (Camera.ProjectionType.ORTHO == c.projectionType) {
-                    continue;
-                }
-                self.updateQuadVertexData(pl.device, pl.generateRenderArea(c));
-                self.originWins.push(c.window);
-                if (self.bloomData) {
-                    c.window = {
-                        framebuffer: self.bloomData.gbufferFrameBuffer
-                    }
-                }
-            }
+        // pl.render = function(cameras: renderer.scene.Camera[]) {
+        //     for (const c of cameras) {
+        //         if (Camera.ProjectionType.ORTHO == c.projectionType) {
+        //             continue;
+        //         }
+        //         self.updateQuadVertexData(pl.device, pl.generateRenderArea(c));
+        //         self.originWins.push(c.window);
+        //         if (self.bloomData) {
+        //             c.window = {
+        //                 framebuffer: self.bloomData.gbufferFrameBuffer
+        //             }
+        //         }
+        //     }
 
-            originRender.call(pl, cameras);
+        //     originRender.call(pl, cameras);
 
-            for (const c of cameras) {
-                if (Camera.ProjectionType.ORTHO == c.projectionType) {
-                    continue;
-                }
-                c.window = self.originWins.shift();
-            }
-        }
+        //     for (const c of cameras) {
+        //         if (Camera.ProjectionType.ORTHO == c.projectionType) {
+        //             continue;
+        //         }
+        //         c.window = self.originWins.shift();
+        //     }
+        // }
     }
 
     addCustomRendererStage() {
@@ -131,31 +131,31 @@ export class Bloom extends Component {
                 const ff = flow as ForwardFlow;
 
                 let bs: BloomBaseStage = new BloomThresholdStage();
-                bs.initialize(ForwardStage.initInfo);
-                bs.bloomMat = this.bloomThressholdMat;
-                bs.bloom = this;
-                bs.framebuffer = this.bloomData.bloomFrameBuffer;
-                bs.activate(fpl, ff);
-                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.gbufferFrameBuffer!.colorTextures[0]!);
-                ff.stages.push(bs);
+                // bs.initialize(ForwardStage.initInfo);
+                // bs.bloomMat = this.bloomThressholdMat;
+                // bs.bloom = this;
+                // bs.framebuffer = this.bloomData.bloomFrameBuffer;
+                // bs.activate(fpl, ff);
+                // bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.gbufferFrameBuffer!.colorTextures[0]!);
+                // ff.stages.push(bs);
 
-                bs = new BloomBlurStage();
-                bs.initialize(ForwardStage.initInfo);
-                bs.bloomMat = this.bloomBlurMat;
-                bs.bloom = this;
-                bs.framebuffer = this.bloomData.bloomFrameBuffer2;
-                bs.activate(fpl, ff);
-                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.bloomFrameBuffer!.colorTextures[0]!);
-                ff.stages.push(bs);
+                // bs = new BloomBlurStage();
+                // bs.initialize(ForwardStage.initInfo);
+                // bs.bloomMat = this.bloomBlurMat;
+                // bs.bloom = this;
+                // bs.framebuffer = this.bloomData.bloomFrameBuffer2;
+                // bs.activate(fpl, ff);
+                // bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.bloomFrameBuffer!.colorTextures[0]!);
+                // ff.stages.push(bs);
 
                 bs = new BloomMergeStage();
-                bs.initialize(ForwardStage.initInfo);
+                // bs.initialize(ForwardStage.initInfo);
                 bs.bloomMat = this.bloomMergeMat;
                 bs.bloom = this;
                 bs.framebuffer = null;
                 bs.activate(fpl, ff);
                 bs.descriptorSet?.bindTexture(pipeline.UNIFORM_LIGHTMAP_TEXTURE_BINDING, this.bloomData.bloomFrameBuffer2!.colorTextures[0]!);
-                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.gbufferFrameBuffer!.colorTextures[0]!)
+                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.gbufferFrameBuffer!.colorTextures[0]!);
                 ff.stages.push(bs);
 
                 break;

@@ -75,6 +75,9 @@ export class BloomBaseStage extends RenderStage {
     }
 
     public render (camera: renderer.scene.Camera): void {
+        if (null == this._bloomMat) {
+            return;
+        }
         const pl = this._pipeline;
         const device = pl.device;
         const cmdBuff = pl.commandBuffers[0];
@@ -100,7 +103,8 @@ export class BloomBaseStage extends RenderStage {
 
         if (this._descriptorSet) {
             const dynamicOffsets: number[] = [0];
-            cmdBuff.bindDescriptorSet(pipeline.SetIndex.LOCAL, this._descriptorSet, dynamicOffsets);
+            // this._descriptorSet.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, camera.window?.framebuffer.colorTextures[0]!)
+            // cmdBuff.bindDescriptorSet(pipeline.SetIndex.LOCAL, this._descriptorSet, dynamicOffsets);
         }
         cmdBuff.bindDescriptorSet(pipeline.SetIndex.GLOBAL, pl.descriptorSet);
 
@@ -117,7 +121,7 @@ export class BloomBaseStage extends RenderStage {
         }
 
         const renderObjects = pl.pipelineSceneData.renderObjects;
-        if (pso != null && renderObjects.length > 0) {
+        if (pso != null) {
             cmdBuff.bindPipelineState(pso);
             cmdBuff.bindInputAssembler(inputAssembler);
             cmdBuff.draw(inputAssembler);
