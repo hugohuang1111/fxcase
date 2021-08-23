@@ -3,24 +3,44 @@ CCEffect %{
   techniques:
   - name: opaque
     passes:
-    - vert: general-vs:vert
-      frag: unlit-fs:frag
+    - vert: fx-bloom-threshold-vs:vert
+      frag: fx-bloom-threshold-fs:frag
 }%
 
-CCProgram unlit-fs %{
+CCProgram fx-bloom-threshold-vs %{
+  precision highp float;
+  #include <cc-global>
+  #include <cc-local-batch>
+  #include <input-standard>
+  #include <cc-fog-vs>
+
+  out vec2 v_uv;
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCVertInput(In);
+
+    v_uv = a_texCoord;
+
+    return In.position;
+  }
+}%
+
+CCProgram fx-bloom-threshold-fs %{
   precision highp float;
   #include <output>
   #include <cc-fog-fs>
 
   in vec2 v_uv;
-  #pragma builtin(local)
-  layout(set = 2, binding = 9) uniform sampler2D cc_lightingMap;
-  #pragma builtin(local)
-  layout(set = 2, binding = 10) uniform sampler2D cc_spriteTexture;
+
+  #pragma builtin(global)
+  layout(set = 0, binding = 6) uniform sampler2D cc_gbuffer_albedoMap;
 
   vec4 frag () {
-    vec4 col = texture(cc_spriteTexture, v_uv);
+    vec4 col = texture(cc_gbuffer_albedoMap, v_uv);
     CC_APPLY_FOG(col);
+    col.w = 1.0;
+    // col = vec4(0., 0., 1., 1.);
     return CCFragOutput(col);
   }
 }%

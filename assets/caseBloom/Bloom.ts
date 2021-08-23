@@ -126,37 +126,64 @@ export class Bloom extends Component {
             console.log("ERROR! can't find pileline flows");
             return;
         }
+        const self = this;
+
+        const sampler = renderer.samplerLib.getSampler(pl.device, samplerHash);
+
         for (let flow of flows) {
             if (flow instanceof ForwardFlow) {
                 const ff = flow as ForwardFlow;
 
+                for (let stage of ff.stages) {
+                    if (stage instanceof ForwardStage) {
+                        const originRender = stage.render;
+
+                        stage.render = function(camera: renderer.scene.Camera) {
+                            const originWin = camera.window;
+                            if (self.bloomData) {
+                                camera.window = {
+                                    framebuffer: self.bloomData.gbufferFrameBuffer
+                                }
+                            }
+
+                            originRender.call(stage, camera);
+
+                            camera.window = originWin;
+                        }
+
+                        break;
+                    }
+                }
+
+                const sampler = renderer.samplerLib.getSampler(pl.device, samplerHash);
+
                 let bs: BloomBaseStage = new BloomThresholdStage();
-                // bs.initialize(ForwardStage.initInfo);
-                // bs.bloomMat = this.bloomThressholdMat;
-                // bs.bloom = this;
-                // bs.framebuffer = this.bloomData.bloomFrameBuffer;
-                // bs.activate(fpl, ff);
-                // bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.gbufferFrameBuffer!.colorTextures[0]!);
-                // ff.stages.push(bs);
+                bs.bloomMat = this.bloomThressholdMat;
+                bs.bloom = this;
+                bs.framebuffer = null; // this.bloomData.bloomFrameBuffer;
+                bs.activate(fpl, ff);
+                // bs.texture1 = this.bloomData.gbufferFrameBuffer!.colorTextures[0]!;
+                // bs.textureSample = sampler;
+                ff.stages.push(bs);
 
                 // bs = new BloomBlurStage();
-                // bs.initialize(ForwardStage.initInfo);
                 // bs.bloomMat = this.bloomBlurMat;
                 // bs.bloom = this;
                 // bs.framebuffer = this.bloomData.bloomFrameBuffer2;
                 // bs.activate(fpl, ff);
-                // bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.bloomFrameBuffer!.colorTextures[0]!);
+                // bs.texture1 = this.bloomData.bloomFrameBuffer!.colorTextures[0]!;
+                // bs.textureSample = sampler;
                 // ff.stages.push(bs);
 
-                bs = new BloomMergeStage();
-                // bs.initialize(ForwardStage.initInfo);
-                bs.bloomMat = this.bloomMergeMat;
-                bs.bloom = this;
-                bs.framebuffer = null;
-                bs.activate(fpl, ff);
-                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_LIGHTMAP_TEXTURE_BINDING, this.bloomData.bloomFrameBuffer2!.colorTextures[0]!);
-                bs.descriptorSet?.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, this.bloomData.gbufferFrameBuffer!.colorTextures[0]!);
-                ff.stages.push(bs);
+                // bs = new BloomMergeStage();
+                // bs.bloomMat = this.bloomMergeMat;
+                // bs.bloom = this;
+                // bs.framebuffer = null;
+                // bs.activate(fpl, ff);
+                // bs.texture1 = this.bloomData.bloomFrameBuffer2!.colorTextures[0]!;
+                // bs.texture2 = this.bloomData.gbufferFrameBuffer!.colorTextures[0]!;
+                // bs.textureSample = sampler;
+                // ff.stages.push(bs);
 
                 break;
             }
@@ -296,10 +323,14 @@ export class Bloom extends Component {
 
         const descriptorSet = pl.descriptorSet;
         descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, bloomData.gbufferFrameBuffer.colorTextures[0]!);
+        descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, bloomData.bloomFrameBuffer.colorTextures[0]!);
+        descriptorSet?.bindTexture(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, bloomData.bloomFrameBuffer2.colorTextures[0]!);
         // descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, bloomData.bloomFrameBuffer.colorTextures[0]!);
 
         const sampler = renderer.samplerLib.getSampler(device, samplerHash);
         descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, sampler);
+        descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, sampler);
+        descriptorSet?.bindSampler(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, sampler);
 
         return bloomData;
     }

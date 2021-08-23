@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, ForwardStage, renderer, getPhaseID, gfx, pipeline, ForwardPipeline, ForwardFlow, CCLoader, find, Sprite, Size, UITransform, Material, RenderStage, PipelineStateManager } from 'cc';
+import { _decorator, Component, Node, ForwardStage, renderer, getPhaseID, gfx, pipeline, ForwardPipeline, ForwardFlow, CCLoader, find, Sprite, Size, UITransform, Material, RenderStage, PipelineStateManager, Camera } from 'cc';
 import { Bloom } from './Bloom';
 import { BloomRenderQueue, bloomRenderQueueClearFunc, opaqueCompareFn, transparentCompareFn } from './BloomRenderQueue';
 const { ccclass, property } = _decorator;
@@ -30,6 +30,10 @@ export class BloomBaseStage extends RenderStage {
     private _bloom: Bloom | null = null;
     private _framebuffer: gfx.Framebuffer | null = null;
     private _descriptorSet: gfx.DescriptorSet | null = null;
+
+    private _texture1: gfx.Texture | null = null;
+    private _texture2: gfx.Texture | null = null;
+    private _textureSample: gfx.Sampler | null = null;
 
     constructor() {
         super();
@@ -64,6 +68,27 @@ export class BloomBaseStage extends RenderStage {
         this._descriptorSet = val;
     }
 
+    get texture1() {
+        return this._texture1;
+    }
+    set texture1(val) {
+        this._texture1 = val;
+    }
+
+    get texture2() {
+        return this._texture2;
+    }
+    set texture2(val) {
+        this._texture2 = val;
+    }
+
+    get textureSample() {
+        return this._textureSample;
+    }
+    set textureSample(val) {
+        this._textureSample = val;
+    }
+
     public activate (pl: ForwardPipeline, flow: ForwardFlow) {
         super.activate(pl, flow);
         const device = pl.device;
@@ -75,14 +100,14 @@ export class BloomBaseStage extends RenderStage {
     }
 
     public render (camera: renderer.scene.Camera): void {
-        if (null == this._bloomMat) {
-            return;
-        }
+        if (camera.projectionType != Camera.ProjectionType.PERSPECTIVE) { return; }
+        if (null == this._bloomMat) { return; }
+
         const pl = this._pipeline;
         const device = pl.device;
         const cmdBuff = pl.commandBuffers[0];
-        const fb = this.framebuffer ? this.framebuffer : camera.window?.framebuffer;
-        if (null == fb) return;
+        let fb = this.framebuffer ? this.framebuffer : camera.window?.framebuffer;
+        if (null == fb) { return; }
         const rp = fb.renderPass;
 
         pl.pipelineUBO.updateCameraUBO(camera);
@@ -93,6 +118,7 @@ export class BloomBaseStage extends RenderStage {
         renderArea.y = vp.y * camera.height;
         renderArea.width = vp.width * camera.width * pl.pipelineSceneData.shadingScale;
         renderArea.height = vp.height * camera.height * pl.pipelineSceneData.shadingScale;
+        this.bloom?.updateQuadVertexData(pl.device, renderArea);
 
         if (camera.clearFlag & gfx.ClearFlagBit.COLOR) {
             colors[0].x = camera.clearColor.x;
@@ -101,20 +127,20 @@ export class BloomBaseStage extends RenderStage {
         }
         colors[0].w = camera.clearColor.w;
 
-        if (this._descriptorSet) {
-            const dynamicOffsets: number[] = [0];
-            // this._descriptorSet.bindTexture(pipeline.UNIFORM_SPRITE_TEXTURE_BINDING, camera.window?.framebuffer.colorTextures[0]!)
-            // cmdBuff.bindDescriptorSet(pipeline.SetIndex.LOCAL, this._descriptorSet, dynamicOffsets);
-        }
-        cmdBuff.bindDescriptorSet(pipeline.SetIndex.GLOBAL, pl.descriptorSet);
+        // if (this._texture1) {
+        //     pl.descriptorSet.bindTexture(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, this._texture1);
+        // }
+        // if (this._texture2) {
+        //     pl.descriptorSet.bindTexture(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, this._texture2);
+        // }
 
-        cmdBuff.beginRenderPass(rp, fb, renderArea,
-            colors, camera.clearDepth, camera.clearStencil);
+        cmdBuff.beginRenderPass(rp, fb, renderArea, colors, camera.clearDepth, camera.clearStencil);
+        cmdBuff.bindDescriptorSet(pipeline.SetIndex.GLOBAL, pl.descriptorSet);
 
         const pass = this.bloomMat!.passes[0];
         const shader = renderer.ShaderPool.get(this.bloomMat!.passes[0].getShaderVariant());
 
-        const inputAssembler = camera.window!.hasOffScreenAttachments ? this._bloom!.quadIAOffscreen : this._bloom!.quadIAOnscreen;
+        let inputAssembler = camera.window!.hasOffScreenAttachments ? this._bloom!.quadIAOffscreen : this._bloom!.quadIAOnscreen;
         let pso: gfx.PipelineState | null = null;
         if (pass != null && shader != null && inputAssembler != null) {
             pso = PipelineStateManager.getOrCreatePipelineState(device, pass, shader, rp, inputAssembler);
