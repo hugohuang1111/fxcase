@@ -36,11 +36,26 @@ CCProgram fx-bloom-threshold-fs %{
   #pragma builtin(global)
   layout(set = 0, binding = 6) uniform sampler2D cc_gbuffer_albedoMap;
 
+  vec4 averageColor(sampler2D tex, vec2 uv) {
+    vec4 avgClr = vec4(0., 0., 0., 1.);
+    avgClr += texture(cc_gbuffer_albedoMap, uv);
+    avgClr += texture(cc_gbuffer_albedoMap, uv + vec2(0, -1));
+    avgClr += texture(cc_gbuffer_albedoMap, uv + vec2(0, 1));
+    avgClr += texture(cc_gbuffer_albedoMap, uv + vec2(-1, 0));
+    avgClr += texture(cc_gbuffer_albedoMap, uv + vec2(1, 0));
+
+    avgClr *= 0.2;
+
+    return avgClr;
+  }
+
   vec4 frag () {
-    vec4 col = texture(cc_gbuffer_albedoMap, v_uv);
-    // CC_APPLY_FOG(col);
-    // col.w = 0.0;
-    // col = vec4(0., 0., 1., 1.);
+    vec4 col = averageColor(cc_gbuffer_albedoMap, v_uv);
+    float luminace = sqrt(col.r*col.r*0.299 + col.g*col.g*0.587 + col.b*col.b*0.114);
+    if (luminace < 0.35) {
+      col = vec4(0., 0., 0., 1.);
+    }
+
     return CCFragOutput(col);
   }
 }%
