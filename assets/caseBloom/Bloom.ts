@@ -84,32 +84,7 @@ export class Bloom extends Component {
             return;
         }
         this.generateIA(pl.device);
-        const originRender = pl.render;
-        const self = this;
-        this._bloomData = self.generateBloomFrameBufferData(pl);
-        // pl.render = function(cameras: renderer.scene.Camera[]) {
-        //     for (const c of cameras) {
-        //         if (Camera.ProjectionType.ORTHO == c.projectionType) {
-        //             continue;
-        //         }
-        //         self.updateQuadVertexData(pl.device, pl.generateRenderArea(c));
-        //         self.originWins.push(c.window);
-        //         if (self.bloomData) {
-        //             c.window = {
-        //                 framebuffer: self.bloomData.gbufferFrameBuffer
-        //             }
-        //         }
-        //     }
-
-        //     originRender.call(pl, cameras);
-
-        //     for (const c of cameras) {
-        //         if (Camera.ProjectionType.ORTHO == c.projectionType) {
-        //             continue;
-        //         }
-        //         c.window = self.originWins.shift();
-        //     }
-        // }
+        this._bloomData = this.generateBloomFrameBufferData(pl);
     }
 
     addCustomRendererStage() {
@@ -127,43 +102,35 @@ export class Bloom extends Component {
             return;
         }
         const self = this;
-
-        const sampler = renderer.samplerLib.getSampler(pl.device, samplerHash);
-
         for (let flow of flows) {
             if (flow instanceof ForwardFlow) {
                 const ff = flow as ForwardFlow;
 
                 for (let stage of ff.stages) {
                     if (stage instanceof ForwardStage) {
-                        const originRender = stage.render;
+                        const fstage = stage;
+                        const originRender = fstage.render;
 
-                        stage.render = function(camera: renderer.scene.Camera) {
-                            const originWin = camera.window;
-                            if (self.bloomData) {
-                                camera.window = {
-                                    framebuffer: self.bloomData.gbufferFrameBuffer
-                                }
+                        fstage.render = function(camera: renderer.scene.Camera) {
+                            const originfb = camera.window?.framebuffer;
+                            if (self.bloomData && camera.window) {
+                                camera.window._framebuffer = self.bloomData.gbufferFrameBuffer
                             }
 
-                            originRender.call(stage, camera);
+                            originRender.call(fstage, camera);
 
-                            camera.window = originWin;
+                            camera.window._framebuffer = originfb;
                         }
 
                         break;
                     }
                 }
 
-                const sampler = renderer.samplerLib.getSampler(pl.device, samplerHash);
-
                 let bs: BloomBaseStage = new BloomThresholdStage();
                 bs.bloomMat = this.bloomThressholdMat;
                 bs.bloom = this;
                 bs.framebuffer = null; // this.bloomData.bloomFrameBuffer;
                 bs.activate(fpl, ff);
-                // bs.texture1 = this.bloomData.gbufferFrameBuffer!.colorTextures[0]!;
-                // bs.textureSample = sampler;
                 ff.stages.push(bs);
 
                 // bs = new BloomBlurStage();
@@ -171,8 +138,6 @@ export class Bloom extends Component {
                 // bs.bloom = this;
                 // bs.framebuffer = this.bloomData.bloomFrameBuffer2;
                 // bs.activate(fpl, ff);
-                // bs.texture1 = this.bloomData.bloomFrameBuffer!.colorTextures[0]!;
-                // bs.textureSample = sampler;
                 // ff.stages.push(bs);
 
                 // bs = new BloomMergeStage();
@@ -180,9 +145,6 @@ export class Bloom extends Component {
                 // bs.bloom = this;
                 // bs.framebuffer = null;
                 // bs.activate(fpl, ff);
-                // bs.texture1 = this.bloomData.bloomFrameBuffer2!.colorTextures[0]!;
-                // bs.texture2 = this.bloomData.gbufferFrameBuffer!.colorTextures[0]!;
-                // bs.textureSample = sampler;
                 // ff.stages.push(bs);
 
                 break;
@@ -323,14 +285,13 @@ export class Bloom extends Component {
 
         const descriptorSet = pl.descriptorSet;
         descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, bloomData.gbufferFrameBuffer.colorTextures[0]!);
-        descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, bloomData.bloomFrameBuffer.colorTextures[0]!);
-        descriptorSet?.bindTexture(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, bloomData.bloomFrameBuffer2.colorTextures[0]!);
-        // descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, bloomData.bloomFrameBuffer.colorTextures[0]!);
+        // descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, bloomData.bloomFrameBuffer.colorTextures[0]!);
+        // descriptorSet?.bindTexture(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, bloomData.bloomFrameBuffer2.colorTextures[0]!);
 
         const sampler = renderer.samplerLib.getSampler(device, samplerHash);
         descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, sampler);
-        descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, sampler);
-        descriptorSet?.bindSampler(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, sampler);
+        // descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, sampler);
+        // descriptorSet?.bindSampler(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, sampler);
 
         return bloomData;
     }

@@ -174,9 +174,9 @@
     "_far": 1000,
     "_color": {
       "__type__": "cc.Color",
-      "r": 51,
-      "g": 51,
-      "b": 51,
+      "r": 83,
+      "g": 52,
+      "b": 180,
       "a": 255
     },
     "_depth": 1,
@@ -276,7 +276,7 @@
     },
     "_materials": [
       {
-        "__uuid__": "d3c7820c-2a98-4429-8bc7-b8453bc9ac41",
+        "__uuid__": "c95553da-efee-423e-89eb-ea0984b3b91f",
         "__expectedType__": "cc.Material"
       }
     ],
@@ -425,7 +425,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 413.49720670391065,
+    "_orthoHeight": 424.4036697247706,
     "_near": 1,
     "_far": 2000,
     "_color": {
@@ -708,20 +708,17 @@
     "_autoAdapt": true,
     "_pcf": 0,
     "_bias": 0.00001,
-    "_packing": false,
-    "_linear": true,
-    "_selfShadow": false,
     "_normalBias": 0,
     "_near": 1,
     "_far": 30,
-    "_aspect": 1,
     "_orthoSize": 5,
     "_maxReceived": 4,
     "_size": {
       "__type__": "cc.Vec2",
       "x": 512,
       "y": 512
-    }
+    },
+    "_saturation": 1
   },
   {
     "__type__": "cc.SkyboxInfo",

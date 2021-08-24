@@ -38,8 +38,8 @@ CCProgram fx-bloom-threshold-fs %{
 
   vec4 frag () {
     vec4 col = texture(cc_gbuffer_albedoMap, v_uv);
-    CC_APPLY_FOG(col);
-    col.w = 1.0;
+    // CC_APPLY_FOG(col);
+    // col.w = 0.0;
     // col = vec4(0., 0., 1., 1.);
     return CCFragOutput(col);
   }
