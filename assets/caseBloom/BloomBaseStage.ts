@@ -138,7 +138,7 @@ export class BloomBaseStage extends RenderStage {
         cmdBuff.bindDescriptorSet(pipeline.SetIndex.GLOBAL, pl.descriptorSet);
 
         const pass = this.bloomMat!.passes[0];
-        const shader = renderer.ShaderPool.get(this.bloomMat!.passes[0].getShaderVariant());
+        const shader = this.bloomMat!.passes[0].getShaderVariant();
 
         let inputAssembler = camera.window!.hasOffScreenAttachments ? this._bloom!.quadIAOffscreen : this._bloom!.quadIAOnscreen;
         let pso: gfx.PipelineState | null = null;
