@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Director, ForwardFlow, ForwardStage, pipeline, ForwardPipeline, Camera, renderer, RenderPipeline, gfx, Material } from 'cc';
+import { _decorator, Component, Node, Director, ForwardFlow, ForwardStage, pipeline, ForwardPipeline, Camera, renderer, RenderPipeline, gfx, Material, log } from 'cc';
 import { BloomBaseStage } from './BloomBaseStage';
 import { BloomBlurXStage } from './BloomBlurXStage';
 import { BloomBlurYStage } from './BloomBlurYStage';
