@@ -3,11 +3,13 @@ CCEffect %{
   techniques:
   - name: opaque
     passes:
-    - vert: fx-bloom-threshold-vs:vert
-      frag: fx-bloom-threshold-fs:frag
+    - vert: fx-bloom-blur-vs:vert
+      frag: fx-bloom-blur-fs:frag
+      properties:
+        windowStep:  { value: 0.1, editor: { displayName: window step size} }
 }%
 
-CCProgram fx-bloom-threshold-vs %{
+CCProgram fx-bloom-blur-vs %{
   precision highp float;
   #include <cc-global>
   #include <cc-local-batch>
@@ -26,7 +28,7 @@ CCProgram fx-bloom-threshold-vs %{
   }
 }%
 
-CCProgram fx-bloom-threshold-fs %{
+CCProgram fx-bloom-blur-fs %{
   precision highp float;
   #include <output>
   #include <cc-fog-fs>
@@ -34,11 +36,35 @@ CCProgram fx-bloom-threshold-fs %{
   in vec2 v_uv;
 
   #pragma builtin(global)
-  layout(set = 0, binding = 9) uniform sampler2D cc_lighting_resultMap;
+  layout(set = 0, binding = 9) uniform sampler2D cc_gbuffer_emissiveMap;
+  #pragma builtin(global)
+  layout(set = 0, binding = 10) uniform sampler2D cc_lighting_resultMap;
+
+  uniform Constants {
+    float windowStep;
+  };
+
+  #define WINDOW_SIZE 5.
 
   vec4 frag () {
-    vec4 col = texture(cc_lighting_resultMap, v_uv);
-    CC_APPLY_FOG(col);
+    vec4 col = vec4(0., 0., 0., 0.);
+
+#if DIRECTIONX
+    col += texture(cc_gbuffer_emissiveMap, v_uv);
+    for (float i = 1.; i <= WINDOW_SIZE; i += 1.) {
+      col += texture(cc_gbuffer_emissiveMap, v_uv + vec2(i * windowStep, 0.));
+      col += texture(cc_gbuffer_emissiveMap, v_uv - vec2(i * windowStep, 0.));
+    }
+#else
+    col += texture(cc_lighting_resultMap, v_uv);
+    for (float i = 1.; i <= WINDOW_SIZE; i += 1.) {
+      col += texture(cc_lighting_resultMap, v_uv + vec2(0., i * windowStep));
+      col += texture(cc_lighting_resultMap, v_uv - vec2(0., i * windowStep));
+    }
+#endif
+
+    col /= (WINDOW_SIZE * 2. + 1.);
+
     return CCFragOutput(col);
   }
 }%

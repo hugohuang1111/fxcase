@@ -1,7 +1,8 @@
 
 import { _decorator, Component, Node, Director, ForwardFlow, ForwardStage, pipeline, ForwardPipeline, Camera, renderer, RenderPipeline, gfx, Material } from 'cc';
 import { BloomBaseStage } from './BloomBaseStage';
-import { BloomBlurStage } from './BloomBlurStage';
+import { BloomBlurXStage } from './BloomBlurXStage';
+import { BloomBlurYStage } from './BloomBlurYStage';
 import { BloomMergeStage } from './BloomMergeStage';
 import { BloomThresholdStage } from './BloomThresholdStage';
 import { FakeUIPhase } from './FakeUIPhase';
@@ -47,7 +48,10 @@ export class Bloom extends Component {
     bloomThressholdMat: Material | null = null;
 
     @property(Material)
-    bloomBlurMat: Material | null = null;
+    bloomBlurXMat: Material | null = null;
+
+    @property(Material)
+    bloomBlurYMat: Material | null = null;
 
     @property(Material)
     bloomMergeMat: Material | null = null;
@@ -129,23 +133,30 @@ export class Bloom extends Component {
                 let bs: BloomBaseStage = new BloomThresholdStage();
                 bs.bloomMat = this.bloomThressholdMat;
                 bs.bloom = this;
-                bs.framebuffer = null; // this.bloomData.bloomFrameBuffer;
+                bs.framebuffer = this.bloomData.bloomFrameBuffer;
                 bs.activate(fpl, ff);
                 ff.stages.push(bs);
 
-                // bs = new BloomBlurStage();
-                // bs.bloomMat = this.bloomBlurMat;
-                // bs.bloom = this;
-                // bs.framebuffer = this.bloomData.bloomFrameBuffer2;
-                // bs.activate(fpl, ff);
-                // ff.stages.push(bs);
+                bs = new BloomBlurXStage();
+                bs.bloomMat = this.bloomBlurXMat;
+                bs.bloom = this;
+                bs.framebuffer = this.bloomData.bloomFrameBuffer2;
+                bs.activate(fpl, ff);
+                ff.stages.push(bs);
 
-                // bs = new BloomMergeStage();
-                // bs.bloomMat = this.bloomMergeMat;
-                // bs.bloom = this;
-                // bs.framebuffer = null;
-                // bs.activate(fpl, ff);
-                // ff.stages.push(bs);
+                bs = new BloomBlurYStage();
+                bs.bloomMat = this.bloomBlurYMat;
+                bs.bloom = this;
+                bs.framebuffer = this.bloomData.bloomFrameBuffer;
+                bs.activate(fpl, ff);
+                ff.stages.push(bs);
+
+                bs = new BloomMergeStage();
+                bs.bloomMat = this.bloomMergeMat;
+                bs.bloom = this;
+                bs.framebuffer = null;
+                bs.activate(fpl, ff);
+                ff.stages.push(bs);
 
                 break;
             }
@@ -285,13 +296,13 @@ export class Bloom extends Component {
 
         const descriptorSet = pl.descriptorSet;
         descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, bloomData.gbufferFrameBuffer.colorTextures[0]!);
-        // descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, bloomData.bloomFrameBuffer.colorTextures[0]!);
-        // descriptorSet?.bindTexture(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, bloomData.bloomFrameBuffer2.colorTextures[0]!);
+        descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, bloomData.bloomFrameBuffer.colorTextures[0]!);
+        descriptorSet?.bindTexture(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, bloomData.bloomFrameBuffer2.colorTextures[0]!);
 
         const sampler = renderer.samplerLib.getSampler(device, samplerHash);
         descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, sampler);
-        // descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, sampler);
-        // descriptorSet?.bindSampler(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, sampler);
+        descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, sampler);
+        descriptorSet?.bindSampler(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, sampler);
 
         return bloomData;
     }

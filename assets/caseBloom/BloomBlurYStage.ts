@@ -2,11 +2,12 @@
 import { _decorator } from 'cc';
 import { BloomBaseStage } from './BloomBaseStage';
 const { ccclass, property } = _decorator;
-@ccclass('BloomBlurStage')
-export class BloomBlurStage extends BloomBaseStage {
+
+@ccclass('BloomBlurYStage')
+export class BloomBlurYStage extends BloomBaseStage {
     constructor() {
         super();
-        this._name = "BloomBlurStage";
+        this._name = "BloomBlurYStage";
     }
 }
 

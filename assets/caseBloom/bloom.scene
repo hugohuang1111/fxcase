@@ -174,9 +174,9 @@
     "_far": 1000,
     "_color": {
       "__type__": "cc.Color",
-      "r": 83,
-      "g": 52,
-      "b": 180,
+      "r": 0,
+      "g": 0,
+      "b": 0,
       "a": 255
     },
     "_depth": 1,
@@ -210,8 +210,12 @@
       "__uuid__": "e29e92cd-e2e7-4c92-947b-0b868745dc1c",
       "__expectedType__": "cc.Material"
     },
-    "bloomBlurMat": {
+    "bloomBlurXMat": {
       "__uuid__": "7197e72a-8727-437c-9dba-067fbf966058",
+      "__expectedType__": "cc.Material"
+    },
+    "bloomBlurYMat": {
+      "__uuid__": "6a9a2e62-ae19-4745-898c-f23e73ea5e36",
       "__expectedType__": "cc.Material"
     },
     "bloomMergeMat": {
@@ -237,9 +241,9 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 0,
-      "z": 0
+      "x": -8.495,
+      "y": 8.391,
+      "z": 8.558
     },
     "_lrot": {
       "__type__": "cc.Quat",
@@ -425,7 +429,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 424.4036697247706,
+    "_orthoHeight": 790.7692307692308,
     "_near": 1,
     "_far": 2000,
     "_color": {
