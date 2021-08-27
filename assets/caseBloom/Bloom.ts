@@ -136,6 +136,7 @@ export class Bloom extends Component {
                 bs.framebuffer = this.bloomData.bloomFrameBuffer;
                 bs.activate(fpl, ff);
                 ff.stages.push(bs);
+                bs.bloomMat?.passes[0].update();
 
                 bs = new BloomBlurXStage();
                 bs.bloomMat = this.bloomBlurXMat;
@@ -143,6 +144,7 @@ export class Bloom extends Component {
                 bs.framebuffer = this.bloomData.bloomFrameBuffer2;
                 bs.activate(fpl, ff);
                 ff.stages.push(bs);
+                bs.bloomMat?.passes[0].update();
 
                 bs = new BloomBlurYStage();
                 bs.bloomMat = this.bloomBlurYMat;
@@ -150,6 +152,7 @@ export class Bloom extends Component {
                 bs.framebuffer = this.bloomData.bloomFrameBuffer;
                 bs.activate(fpl, ff);
                 ff.stages.push(bs);
+                bs.bloomMat?.passes[0].update();
 
                 bs = new BloomMergeStage();
                 bs.bloomMat = this.bloomMergeMat;
@@ -157,6 +160,7 @@ export class Bloom extends Component {
                 bs.framebuffer = null;
                 bs.activate(fpl, ff);
                 ff.stages.push(bs);
+                bs.bloomMat?.passes[0].update();
 
                 break;
             }

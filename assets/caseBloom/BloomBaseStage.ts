@@ -127,13 +127,6 @@ export class BloomBaseStage extends RenderStage {
         }
         colors[0].w = camera.clearColor.w;
 
-        // if (this._texture1) {
-        //     pl.descriptorSet.bindTexture(pipeline.UNIFORM_LIGHTING_RESULTMAP_BINDING, this._texture1);
-        // }
-        // if (this._texture2) {
-        //     pl.descriptorSet.bindTexture(pipeline.UNIFORM_GBUFFER_EMISSIVEMAP_BINDING, this._texture2);
-        // }
-
         cmdBuff.beginRenderPass(rp, fb, renderArea, colors, camera.clearDepth, camera.clearStencil);
         cmdBuff.bindDescriptorSet(pipeline.SetIndex.GLOBAL, pl.descriptorSet);
 
@@ -149,6 +142,7 @@ export class BloomBaseStage extends RenderStage {
         const renderObjects = pl.pipelineSceneData.renderObjects;
         if (pso != null) {
             cmdBuff.bindPipelineState(pso);
+            cmdBuff.bindDescriptorSet(pipeline.SetIndex.MATERIAL, pass.descriptorSet);
             cmdBuff.bindInputAssembler(inputAssembler);
             cmdBuff.draw(inputAssembler);
         }

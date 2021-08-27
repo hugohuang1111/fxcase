@@ -6,7 +6,7 @@ CCEffect %{
     - vert: fx-bloom-threshold-vs:vert
       frag: fx-bloom-threshold-fs:frag
       properties:
-        thresholdVal:  { value: 0.5 }
+        thresholdVal:  { value: 0.3, editor: { displayName: threshold val, range: [0, 1] }}
 }%
 
 CCProgram fx-bloom-threshold-vs %{
@@ -17,9 +17,6 @@ CCProgram fx-bloom-threshold-vs %{
   #include <cc-fog-vs>
 
   out vec2 v_uv;
-  uniform Constants {
-    float thresholdVal;
-  };
 
   vec4 vert () {
     StandardVertInput In;
@@ -49,7 +46,7 @@ CCProgram fx-bloom-threshold-fs %{
     vec4 col = texture(cc_gbuffer_albedoMap, v_uv);
     float luminace = sqrt(col.r*col.r*0.299 + col.g*col.g*0.587 + col.b*col.b*0.114);
 
-    if (luminace < 0.3) {
+    if (luminace < thresholdVal) {
       col = vec4(0., 0., 0., 1.);
     }
 

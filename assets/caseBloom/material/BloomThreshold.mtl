@@ -23,8 +23,6 @@
     }
   ],
   "_props": [
-    {
-      "thresholdVal": 0.3
-    }
+    {}
   ]
 }
