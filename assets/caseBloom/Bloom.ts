@@ -78,11 +78,11 @@ export class Bloom extends Component {
     }
 
     start () {
-        this.hackPipelineRender();
-        this.addCustomRendererStage();
+        this.generatePipelineRenderData();
+        this.addBloomRendererStage();
     }
 
-    hackPipelineRender() {
+    generatePipelineRenderData() {
         const pl = Director.instance.root?.pipeline;
         if (null == pl) {
             return;
@@ -91,7 +91,7 @@ export class Bloom extends Component {
         this._bloomData = this.generateBloomFrameBufferData(pl);
     }
 
-    addCustomRendererStage() {
+    addBloomRendererStage() {
         const pl = Director.instance.root?.pipeline;
         if (null == pl) {
             return;
