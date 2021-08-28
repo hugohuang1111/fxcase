@@ -1,9 +1,9 @@
 {
+  "creator": {
+    "version": "3.3.0"
+  },
   "name": "shadercase",
   "type": "3d",
   "uuid": "fd1b0173-606d-4fcd-80ba-d788952d8581",
-  "version": "3.2.0",
-  "creator": {
-    "version": "3.2.0"
-  }
+  "version": "3.3.0"
 }

@@ -14,3 +14,8 @@
 
 ![内发光](./doc/images/outline1.jpg)
 
+* 外发光 (assets/caseBloom)
+
+![内发光](./doc/images/bloom1.png)
+
+
