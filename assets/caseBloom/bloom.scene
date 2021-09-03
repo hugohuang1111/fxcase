@@ -212,7 +212,7 @@
       "__expectedType__": "cc.Material"
     },
     "bloomBlurYMat": {
-      "__uuid__": "6a9a2e62-ae19-4745-898c-f23e73ea5e36",
+      "__uuid__": "6feee30a-5bea-4313-9300-b9e91eaf68ab",
       "__expectedType__": "cc.Material"
     },
     "bloomMergeMat": {

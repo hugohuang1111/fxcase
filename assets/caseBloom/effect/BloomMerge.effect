@@ -50,7 +50,7 @@ CCProgram fx-bloom-merge-fs %{
     vec4 blurCol = texture(cc_gbuffer_emissiveMap, v_uv);
     vec4 col = difCol + blurCol;
 
-    col = vec4(1.) - exp(-col * toneExp);
+    // col = vec4(1.) - exp(-col * toneExp);
 
     return CCFragOutput(col);
   }
