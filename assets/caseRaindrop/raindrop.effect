@@ -1,0 +1,80 @@
+
+CCEffect %{
+  techniques:
+  - name: transparent
+    passes:
+    - vert: general-vs:vert # builtin header
+      frag: unlit-fs:frag
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendSrcAlpha: src_alpha
+          blendDstAlpha: one_minus_src_alpha
+}%
+
+CCProgram unlit-fs %{
+  precision highp float;
+  #include <output>
+  #include <cc-global>
+  #include <cc-fog-fs>
+
+  in vec2 v_uv;
+
+#define DROP_TAILTILE 3.0
+
+  float N11(float t) {
+    return fract(sin(t*10234.324)*123423.23512);
+  }
+
+  float N12(vec2 p)
+  { // Dave Hoskins - https://www.shadertoy.com/view/4djSRW
+    vec3 p3  = fract(vec3(p.xyx) * vec3(443.897, 441.423, 437.195));
+    p3 += dot(p3, p3.yzx + 19.19);
+    return fract((p3.x + p3.y) * p3.z);
+  }
+
+  vec2 rain(vec2 uv, float speed, float seed) {
+    vec2 gridsWH = vec2(6, 3);
+    vec2 ratio = gridsWH/gridsWH.y;
+    uv *= gridsWH;
+    uv.y -= speed * cc_time.x + sin(floor(uv.x)*3.);
+    float noise = fract(N12(floor(uv))) - 0.5;
+    noise *= 0.3;
+    uv = fract(uv);
+    uv -= 0.5;
+
+    vec2 dropUV = uv / ratio;
+    dropUV.x += noise;
+    dropUV.y -= sin(cc_time.x + sin(cc_time.x + sin(cc_time.x))) * 0.4;
+    dropUV.y -= dropUV.x * dropUV.x;
+    float rDrop = smoothstep(0.15, 0.1, length(dropUV));
+    vec2 trailUV = uv / ratio;
+    trailUV.x += noise;
+    trailUV.y += speed * cc_time.x;
+    trailUV.y = fract(trailUV.y * 4.);
+    trailUV.y -= 0.5;
+    trailUV.x *= 4.;
+    float rTrail = smoothstep(0.3, 0.2, length(trailUV));
+    rTrail *= smoothstep(0.02, -0.02, dropUV.y);
+    rTrail *= smoothstep(-0.6, 0., dropUV.y);
+
+    return vec2(rDrop + rTrail);
+  }
+
+  vec4 frag () {
+    vec2 uv = v_uv;
+    vec4 col = vec4(1., 0., 0., 0.);
+
+    vec2 offsetUV = vec2(0.0);
+    offsetUV = rain(uv, 0.4, 10.2145);
+    offsetUV += rain(uv*2.54, 1.1, 32.6918);
+
+    col.xyz = vec3(length(offsetUV));
+    col.w = step(0.01, length(col));
+
+    CC_APPLY_FOG(col);
+    return CCFragOutput(col);
+  }
+}%
