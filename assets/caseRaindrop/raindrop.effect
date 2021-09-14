@@ -38,27 +38,31 @@ CCProgram unlit-fs %{
   vec2 rain(vec2 uv, float speed, float seed) {
     vec2 gridsWH = vec2(6, 3);
     vec2 ratio = gridsWH/gridsWH.y;
+    float time = cc_time.x + speed;
     uv *= gridsWH;
-    uv.y -= speed * cc_time.x + sin(floor(uv.x)*3.);
+    uv.y -= speed * time; // + sin(floor(uv.x)*3.);
     float noise = fract(N12(floor(uv))) - 0.5;
     noise *= 0.3;
     uv = fract(uv);
     uv -= 0.5;
+    time += noise * 6.;
 
     vec2 dropUV = uv / ratio;
     dropUV.x += noise;
-    dropUV.y -= sin(cc_time.x + sin(cc_time.x + sin(cc_time.x))) * 0.4;
+    dropUV.y -= sin(time + sin(time + sin(time))) * 0.4;
     dropUV.y -= dropUV.x * dropUV.x;
     float rDrop = smoothstep(0.15, 0.1, length(dropUV));
     vec2 trailUV = uv / ratio;
     trailUV.x += noise;
-    trailUV.y += speed * cc_time.x;
+    trailUV.y += speed * time;
     trailUV.y = fract(trailUV.y * 4.);
     trailUV.y -= 0.5;
     trailUV.x *= 4.;
     float rTrail = smoothstep(0.3, 0.2, length(trailUV));
     rTrail *= smoothstep(0.02, -0.02, dropUV.y);
     rTrail *= smoothstep(-0.6, 0., dropUV.y);
+
+    // if (uv.x > 0.48 || uv.y > 0.48) { rDrop = 1.0; }
 
     return vec2(rDrop + rTrail);
   }
@@ -72,7 +76,8 @@ CCProgram unlit-fs %{
     offsetUV += rain(uv*2.54, 1.1, 32.6918);
 
     col.xyz = vec3(length(offsetUV));
-    col.w = step(0.01, length(col));
+    // col.w = step(0.01, length(col));
+    col.w = smoothstep(0.01, 0.8, length(col));
 
     CC_APPLY_FOG(col);
     return CCFragOutput(col);
