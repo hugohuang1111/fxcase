@@ -1,3 +1,6 @@
 {
-  "__version__": "1.0.1"
+  "__version__": "1.0.1",
+  "general": {
+    "renderPipeline": "fd8ec536-a354-4a17-9c74-4f3883c378c8"
+  }
 }

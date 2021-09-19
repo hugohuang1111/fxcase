@@ -1,9 +1,11 @@
 {
-  "ver": "2.0.14",
+  "ver": "2.1.4",
   "importer": "fbx",
   "imported": true,
   "uuid": "e5f46027-1bfc-455d-88e7-4861ac6dc02e",
-  "files": [],
+  "files": [
+    "__original-animation-0.cconb"
+  ],
   "subMetas": {
     "59253": {
       "importer": "gltf-material",
@@ -54,11 +56,10 @@
         },
         "events": []
       },
-      "ver": "1.0.14",
+      "ver": "1.0.16",
       "imported": true,
       "files": [
-        ".bin",
-        ".json"
+        ".cconb"
       ],
       "subMetas": {}
     },

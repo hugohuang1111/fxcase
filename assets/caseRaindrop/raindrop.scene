@@ -21,10 +21,13 @@
         "__id__": 5
       },
       {
-        "__id__": 7
+        "__id__": 9
       },
       {
-        "__id__": 10
+        "__id__": 12
+      },
+      {
+        "__id__": 16
       }
     ],
     "_active": true,
@@ -32,7 +35,7 @@
     "_prefab": null,
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 14
+      "__id__": 18
     },
     "_id": "750b24ee-081b-4f9b-a2bc-46e81f04005a"
   },
@@ -122,6 +125,9 @@
     "_components": [
       {
         "__id__": 6
+      },
+      {
+        "__id__": 7
       }
     ],
     "_prefab": null,
@@ -195,6 +201,29 @@
     "_id": "7dWQTpwS5LrIHnc1zAPUtf"
   },
   {
+    "__type__": "e859dX3wWNB36NxXTuWskSP",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 5
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "stageDescs": [
+      {
+        "__id__": 8
+      }
+    ],
+    "_id": "18KeeaqHlOdpyT3UhKipNB"
+  },
+  {
+    "__type__": "PPStageDesc",
+    "mat": {
+      "__uuid__": "a58aab85-351a-40d5-a229-a538b020ed3e",
+      "__expectedType__": "cc.Material"
+    }
+  },
+  {
     "__type__": "cc.Node",
     "_name": "glass",
     "_objFlags": 0,
@@ -202,10 +231,10 @@
       "__id__": 1
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
-        "__id__": 8
+        "__id__": 10
       }
     ],
     "_prefab": null,
@@ -242,7 +271,7 @@
     "_name": "",
     "_objFlags": 0,
     "node": {
-      "__id__": 7
+      "__id__": 9
     },
     "_enabled": true,
     "__prefab": null,
@@ -254,7 +283,7 @@
     ],
     "_visFlags": 0,
     "lightmapSettings": {
-      "__id__": 9
+      "__id__": 11
     },
     "_mesh": {
       "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@fc873",
@@ -292,15 +321,15 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 11
+        "__id__": 13
       }
     ],
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 0,
-      "z": -2
+      "x": -0.14,
+      "y": 1.334,
+      "z": -4.15
     },
     "_lrot": {
       "__type__": "cc.Quat",
@@ -329,11 +358,11 @@
     "_name": "Capsule<ModelComponent>",
     "_objFlags": 0,
     "node": {
-      "__id__": 10
+      "__id__": 12
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 12
+      "__id__": 14
     },
     "_materials": [
       {
@@ -343,7 +372,7 @@
     ],
     "_visFlags": 0,
     "lightmapSettings": {
-      "__id__": 13
+      "__id__": 15
     },
     "_mesh": {
       "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@801ec",
@@ -375,18 +404,73 @@
     "_lightmapSize": 64
   },
   {
-    "__type__": "cc.SceneGlobals",
-    "ambient": {
-      "__id__": 15
+    "__type__": "cc.Node",
+    "_name": "PPMgr",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 1
     },
-    "shadows": {
+    "_children": [],
+    "_active": true,
+    "_components": [
+      {
+        "__id__": 17
+      }
+    ],
+    "_prefab": null,
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": 5,
+      "y": 0,
+      "z": 10
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_layer": 1073741824,
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": "274yOg8+pO446vY8eI7cmY"
+  },
+  {
+    "__type__": "e859dX3wWNB36NxXTuWskSP",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
       "__id__": 16
     },
+    "_enabled": true,
+    "__prefab": null,
+    "stageDescs": [],
+    "_id": "7ddUUrJIlMqZUuFMjZ2isG"
+  },
+  {
+    "__type__": "cc.SceneGlobals",
+    "ambient": {
+      "__id__": 19
+    },
+    "shadows": {
+      "__id__": 20
+    },
     "_skybox": {
-      "__id__": 17
+      "__id__": 21
     },
     "fog": {
-      "__id__": 18
+      "__id__": 22
     }
   },
   {
@@ -425,12 +509,14 @@
       "b": 76,
       "a": 255
     },
-    "_autoAdapt": true,
+    "_fixedArea": false,
     "_pcf": 0,
-    "_bias": 0.00001,
+    "_bias": 1,
     "_normalBias": 0,
     "_near": 1,
     "_far": 30,
+    "_shadowDistance": 100,
+    "_invisibleOcclusionRange": 200,
     "_orthoSize": 5,
     "_maxReceived": 4,
     "_size": {
