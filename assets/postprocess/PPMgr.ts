@@ -3,8 +3,8 @@ import { _decorator, Component, Director, ForwardFlow, ForwardStage, pipeline, F
 import { PPBaseStage } from './PPBaseStage';
 const { ccclass, property } = _decorator;
 
-@ccclass('PPStageDesc')
-export class PPStageDesc {
+@ccclass('PPStageDesc1')
+export class PPStageDesc1 {
     @property(Material)
     mat:    Material | null = null;
 }
@@ -23,8 +23,8 @@ const samplerHash = renderer.genSamplerHash(_samplerInfo);
 @ccclass('PPMgr')
 export class PPMgr extends Component {
 
-    @property([PPStageDesc])
-    stageDescs: PPStageDesc[] = [];
+    @property([PPStageDesc1])
+    stageDescs: PPStageDesc1[] = [];
 
     private _framebuffer: gfx.Framebuffer | null = null;
     private _quadIA: gfx.InputAssembler | null = null;
@@ -91,6 +91,7 @@ export class PPMgr extends Component {
                     stage.ia = this._quadIA;
                     stage.activate(fpl, ff);
                     ff.stages.push(stage);
+                    stage.mat?.passes[0].update();
                 });
 
                 break;
@@ -194,6 +195,7 @@ export class PPMgr extends Component {
         const sampler = renderer.samplerLib.getSampler(device, samplerHash);
         descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, sampler);
 
+        descriptorSet?.update();
         this._framebuffer = fb;
     }
 

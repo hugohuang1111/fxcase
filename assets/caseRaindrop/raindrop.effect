@@ -3,8 +3,29 @@ CCEffect %{
   techniques:
   - name: transparent
     passes:
-    - vert: general-vs:vert # builtin header
+    - vert: fx-raindrop-vs:vert # builtin header
       frag: unlit-fs:frag
+      properties:
+        winSize:  { value: [375.0, 667.0], editor: { displayName: window size } }
+}%
+
+CCProgram fx-raindrop-vs %{
+  precision highp float;
+  #include <cc-global>
+  #include <cc-local-batch>
+  #include <input-standard>
+  #include <cc-fog-vs>
+
+  out vec2 v_uv;
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCVertInput(In);
+
+    v_uv = a_texCoord;
+
+    return In.position;
+  }
 }%
 
 CCProgram unlit-fs %{
@@ -12,6 +33,10 @@ CCProgram unlit-fs %{
   #include <output>
   #include <cc-global>
   #include <cc-fog-fs>
+
+  uniform Constants {
+    vec2 winSize;
+  };
 
   in vec2 v_uv;
 
@@ -31,54 +56,56 @@ CCProgram unlit-fs %{
     return fract((p3.x + p3.y) * p3.z);
   }
 
-  vec2 rain(vec2 uv, float speed, float seed) {
-    vec2 gridsWH = vec2(6, 3);
-    vec2 ratio = gridsWH/gridsWH.y;
-    float time = cc_time.x + speed;
-    uv *= gridsWH;
-    uv.y -= speed * time; // + sin(floor(uv.x)*3.);
-    float noise = fract(N12(floor(uv))) - 0.5;
-    noise *= 0.3;
-    uv = fract(uv);
-    uv -= 0.5;
-    time += noise * 6.;
+  vec2 rain(vec2 uv, vec2 gridsWH, float speed) {
+    float time = cc_time.x;
+    uv.y -= time * speed;
 
-    vec2 dropUV = uv / ratio;
-    dropUV.x += noise;
-    dropUV.y -= sin(time + sin(time + sin(time))) * 0.4;
-    dropUV.y -= dropUV.x * dropUV.x;
-    float rDrop = smoothstep(0.15, 0.1, length(dropUV));
-    vec2 trailUV = uv / ratio;
-    trailUV.x += noise;
-    trailUV.y += speed * time;
-    trailUV.y = fract(trailUV.y * 4.);
-    trailUV.y -= 0.5;
-    trailUV.x *= 4.;
-    float rTrail = smoothstep(0.3, 0.2, length(trailUV));
-    rTrail *= smoothstep(0.02, -0.02, dropUV.y);
-    rTrail *= smoothstep(-0.6, 0., dropUV.y);
+    vec2 cellUV = uv*gridsWH;
+    vec2 id = floor(cellUV);
+    cellUV = fract(cellUV);
+    float noise = N12(id);
+		time += noise * 6.14;
 
-    // if (uv.x > 0.48 || uv.y > 0.48) { rDrop = 1.0; }
+    vec2 dropUV = cellUV - 0.5;
+    vec2 gridSize = winSize/gridsWH;
+    gridSize /= gridSize.y;
+    float rDrop = 0.;
+    dropUV.y -= sin(time + sin(time + sin(time)* 0.5)) * 0.4;
+    rDrop = length(dropUV * gridSize);
+    rDrop = smoothstep(0.1, 0.08, rDrop);
 
-    return vec2(rDrop + rTrail);
+    vec2 trailUV = cellUV * vec2(1., 8.);
+    trailUV = fract(trailUV);
+    trailUV -= 0.5;
+    float rTrail = length(trailUV * gridSize / vec2(1., 8.));
+    rTrail = smoothstep(0.05, 0.03, rTrail);
+    rTrail *= smoothstep(-0.4, 0., dropUV.y);
+    rTrail *= smoothstep(0., -0.01, dropUV.y);
+
+    // if (cellUV.x > .99 || cellUV.y > .99) rDrop = 1.;
+
+    // return vec2(rDrop + rTrail);
+    return vec2(rDrop * dropUV + rTrail * trailUV);
   }
 
-  vec4 frag () {
+  vec4 frag() {
     vec2 uv = v_uv;
-    vec4 col = vec4(1., 0., 0., 0.);
+    vec4 col = vec4(0.);
 
-    vec2 offsetUV = vec2(0.0);
-    offsetUV = rain(uv, 0.4, 10.2145);
-    offsetUV += rain(uv*2.54, 1.1, 32.6918);
+    float x = 0.1;
+    float s = sin(x);
+    float c = cos(x);
+    mat2 rot = mat2(c, -s, s, c);
+    uv = rot * uv;
 
-    col.xyz = vec3(length(offsetUV));
-    // col.w = step(0.01, length(col));
-    col.w = smoothstep(0.01, 0.8, length(col));
-
-    vec4 texCol = texture(cc_gbuffer_albedoMap, v_uv);
+    vec2 offsetUV = vec2(0.);
+    offsetUV += rain(uv, vec2(10., 6.),  0.1);
+    offsetUV += rain(uv, vec2(26., 15.),  0.03);
+    // col += vec4(length(offsetUV)) ;
+    vec4 texCol = texture(cc_gbuffer_albedoMap, v_uv + offsetUV);
     col = texCol;
 
-    // CC_APPLY_FOG(col);
     return CCFragOutput(col);
   }
+
 }%

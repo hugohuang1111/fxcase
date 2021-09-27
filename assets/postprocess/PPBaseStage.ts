@@ -13,7 +13,6 @@ const _samplerInfo = [
     gfx.Address.CLAMP,
 ];
 
-const samplerHash = renderer.genSamplerHash(_samplerInfo);
 
 @ccclass('PPBaseStage')
 export class PPBaseStage extends RenderStage {
@@ -46,15 +45,6 @@ export class PPBaseStage extends RenderStage {
     }
     set framebuffer(val) {
         this._framebuffer = val;
-    }
-
-    public activate (pl: ForwardPipeline, flow: ForwardFlow) {
-        super.activate(pl, flow);
-        const device = pl.device;
-
-        const layoutInfo = new gfx.DescriptorSetLayoutInfo(pipeline.localDescriptorSetLayout.bindings);
-        const layout = device.createDescriptorSetLayout(layoutInfo);
-        const descSetInfo = new gfx.DescriptorSetInfo(layout);
     }
 
     public render (camera: renderer.scene.Camera): void {
@@ -97,7 +87,6 @@ export class PPBaseStage extends RenderStage {
             pso = PipelineStateManager.getOrCreatePipelineState(device, pass, shader, rp, inputAssembler);
         }
 
-        const renderObjects = pl.pipelineSceneData.renderObjects;
         if (pso != null) {
             cmdBuff.bindPipelineState(pso);
             cmdBuff.bindDescriptorSet(pipeline.SetIndex.MATERIAL, pass.descriptorSet);
