@@ -58,7 +58,7 @@ CCProgram unlit-fs %{
 
   vec2 rain(vec2 uv, vec2 gridsWH, float speed) {
     float time = cc_time.x;
-    uv.y -= time * speed;
+    uv.y += time * speed;
 
     vec2 cellUV = uv*gridsWH;
     vec2 id = floor(cellUV);
@@ -70,7 +70,7 @@ CCProgram unlit-fs %{
     vec2 gridSize = winSize/gridsWH;
     gridSize /= gridSize.y;
     float rDrop = 0.;
-    dropUV.y -= sin(time + sin(time + sin(time)* 0.5)) * 0.4;
+    dropUV.y += sin(time + sin(time + sin(time)* 0.5)) * 0.4;
     rDrop = length(dropUV * gridSize);
     rDrop = smoothstep(0.1, 0.08, rDrop);
 
@@ -79,12 +79,9 @@ CCProgram unlit-fs %{
     trailUV -= 0.5;
     float rTrail = length(trailUV * gridSize / vec2(1., 8.));
     rTrail = smoothstep(0.05, 0.03, rTrail);
-    rTrail *= smoothstep(-0.4, 0., dropUV.y);
-    rTrail *= smoothstep(0., -0.01, dropUV.y);
+    rTrail *= smoothstep(-0.01, 0., dropUV.y);
+    rTrail *= smoothstep(0.4, 0., dropUV.y);
 
-    // if (cellUV.x > .99 || cellUV.y > .99) rDrop = 1.;
-
-    // return vec2(rDrop + rTrail);
     return vec2(rDrop * dropUV + rTrail * trailUV);
   }
 
@@ -92,7 +89,7 @@ CCProgram unlit-fs %{
     vec2 uv = v_uv;
     vec4 col = vec4(0.);
 
-    float x = 0.1;
+    float x = 0.18;
     float s = sin(x);
     float c = cos(x);
     mat2 rot = mat2(c, -s, s, c);
@@ -101,7 +98,7 @@ CCProgram unlit-fs %{
     vec2 offsetUV = vec2(0.);
     offsetUV += rain(uv, vec2(10., 6.),  0.1);
     offsetUV += rain(uv, vec2(26., 15.),  0.03);
-    // col += vec4(length(offsetUV)) ;
+    col += vec4(length(offsetUV));
     vec4 texCol = texture(cc_gbuffer_albedoMap, v_uv + offsetUV);
     col = texCol;
 

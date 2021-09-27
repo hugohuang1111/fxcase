@@ -4,16 +4,6 @@ const { ccclass } = _decorator;
 
 const colors: gfx.Color[] = [new gfx.Color(0, 0, 0, 1)];
 
-const _samplerInfo = [
-    gfx.Filter.LINEAR,
-    gfx.Filter.LINEAR,
-    gfx.Filter.NONE,
-    gfx.Address.CLAMP,
-    gfx.Address.CLAMP,
-    gfx.Address.CLAMP,
-];
-
-
 @ccclass('PPBaseStage')
 export class PPBaseStage extends RenderStage {
 

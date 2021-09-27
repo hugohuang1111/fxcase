@@ -3,8 +3,8 @@ import { _decorator, Component, Director, ForwardFlow, ForwardStage, pipeline, F
 import { PPBaseStage } from './PPBaseStage';
 const { ccclass, property } = _decorator;
 
-@ccclass('PPStageDesc1')
-export class PPStageDesc1 {
+@ccclass('PPStageDesc')
+export class PPStageDesc {
     @property(Material)
     mat:    Material | null = null;
 }
@@ -23,8 +23,8 @@ const samplerHash = renderer.genSamplerHash(_samplerInfo);
 @ccclass('PPMgr')
 export class PPMgr extends Component {
 
-    @property([PPStageDesc1])
-    stageDescs: PPStageDesc1[] = [];
+    @property([PPStageDesc])
+    stageDescs: PPStageDesc[] = [];
 
     private _framebuffer: gfx.Framebuffer | null = null;
     private _quadIA: gfx.InputAssembler | null = null;
@@ -112,10 +112,10 @@ export class PPMgr extends Component {
         ));
         const vbData = new Float32Array(4 * 4);
         let n = 0;
-        vbData[n++] = -1.0; vbData[n++] = -1.0; vbData[n++] = 0; vbData[n++] = 1;
-        vbData[n++] = 1.0; vbData[n++] = -1.0; vbData[n++] = 1; vbData[n++] = 1;
-        vbData[n++] = -1.0; vbData[n++] = 1.0; vbData[n++] = 0; vbData[n++] = 0;
-        vbData[n++] = 1.0; vbData[n++] = 1.0; vbData[n++] = 1; vbData[n++] = 0;
+        vbData[n++] = -1.0; vbData[n++] = -1.0; vbData[n++] = 0; vbData[n++] = 0;
+        vbData[n++] = 1.0; vbData[n++] = -1.0; vbData[n++] = 1; vbData[n++] = 0;
+        vbData[n++] = -1.0; vbData[n++] = 1.0; vbData[n++] = 0; vbData[n++] = 1;
+        vbData[n++] = 1.0; vbData[n++] = 1.0; vbData[n++] = 1; vbData[n++] = 1;
         quadVB.update(vbData);
 
         const ibStride = Uint8Array.BYTES_PER_ELEMENT;
