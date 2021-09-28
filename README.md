@@ -18,4 +18,7 @@
 
 ![内发光](./doc/images/bloom1.png)
 
+* 玻璃上的雨滴
+
+![雨滴](./doc/images/rainOnWindow.gif)
 
