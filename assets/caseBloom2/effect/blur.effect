@@ -1,0 +1,63 @@
+
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: fx-bloom2-threshold-vs:vert # builtin header
+      frag: fx-bloom2-threshold-fs:frag
+      properties:
+        windowStep:  { value: 0.01, editor: { displayName: window step X size, range: [0, 0.1] } }
+        tempTex:    { value: white }
+}%
+
+CCProgram fx-bloom2-threshold-vs %{
+  precision highp float;
+  #include <cc-global>
+  #include <cc-local-batch>
+  #include <input-standard>
+  #include <cc-fog-vs>
+
+  out vec2 v_uv;
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCVertInput(In);
+
+    v_uv = a_texCoord;
+
+    return In.position;
+  }
+}%
+
+CCProgram fx-bloom2-threshold-fs %{
+  precision highp float;
+  #include <output>
+  #include <cc-fog-fs>
+
+  in vec2 v_uv;
+
+  uniform sampler2D tempTex;
+  uniform Constants {
+    float windowStep;
+  };
+
+  #define WINDOW_SIZE 5.
+
+  vec4 frag () {
+    vec4 col = vec4(0., 0., 0., 0.);
+
+    col += texture(tempTex, v_uv);
+    for (float i = 1.; i <= WINDOW_SIZE; i += 1.) {
+      col += texture(tempTex, v_uv + vec2(i * windowStep, 0.));
+      col += texture(tempTex, v_uv - vec2(i * windowStep, 0.));
+
+      col += texture(tempTex, v_uv + vec2(0., i * windowStep));
+      col += texture(tempTex, v_uv - vec2(0., i * windowStep));
+    }
+
+    col /= (WINDOW_SIZE * 4. + 1.);
+
+    return CCFragOutput(col);
+  }
+}%
+

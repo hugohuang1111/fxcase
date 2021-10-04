@@ -1,12 +1,24 @@
 
-import { _decorator, Component, Director, ForwardFlow, ForwardStage, pipeline, ForwardPipeline, renderer, RenderPipeline, gfx, Material } from 'cc';
+import { _decorator, Component, Director, ForwardFlow, ForwardStage, pipeline, ForwardPipeline, renderer, RenderPipeline, gfx, Material, CCString } from 'cc';
 import { PPBaseStage } from './PPBaseStage';
 const { ccclass, property } = _decorator;
+
+export class ShaderTexParams {
+    name: string = "";
+
+}
 
 @ccclass('PPStageDesc')
 export class PPStageDesc {
     @property(Material)
     mat:    Material | null = null;
+
+    @property([CCString])
+    inFBNames: string[] = [];
+
+    @property()
+    outFBName: string = "";
+
 }
 
 const _samplerInfo = [
@@ -26,7 +38,8 @@ export class PPMgr extends Component {
     @property([PPStageDesc])
     stageDescs: PPStageDesc[] = [];
 
-    private _framebuffer: gfx.Framebuffer | null = null;
+    private fbMap: Map<string, gfx.Framebuffer> = new Map();
+
     private _quadIA: gfx.InputAssembler | null = null;
 
     start () {
@@ -40,7 +53,7 @@ export class PPMgr extends Component {
             return;
         }
         this.generateIA(pl.device);
-        this.generateFrameBuffer(pl);
+        this.generateFrameBuffers(pl);
     }
 
     addPostProcessStage() {
@@ -54,10 +67,11 @@ export class PPMgr extends Component {
         if (0 == this.stageDescs.length) {
             return;
         }
+        const device = pl.device;
         const fpl = pl as ForwardPipeline;
         let flows = pl.flows;
         if (null == flows) {
-            console.log("ERROR! can't find pileline flows");
+            console.log("ERROR! can't find pipeline flows");
             return;
         }
         const self = this;
@@ -73,7 +87,7 @@ export class PPMgr extends Component {
                         fstage.render = function(camera: renderer.scene.Camera) {
                             const originfb = camera.window?.framebuffer;
                             if (camera.window) {
-                                camera.window._framebuffer = self._framebuffer;
+                                camera.window._framebuffer = self.fbMap.get("screenTex");
                             }
 
                             originRender.call(fstage, camera);
@@ -85,18 +99,48 @@ export class PPMgr extends Component {
                     }
                 }
 
-                this.stageDescs.forEach(stageDesc => {
+                for (let i = 0; i < this.stageDescs.length; i++) {
+                    const stageDesc = this.stageDescs[i];
                     const stage = new PPBaseStage();
                     stage.mat = stageDesc.mat;
                     stage.ia = this._quadIA;
+
+                    const pass = stage.mat?.passes[0];
+                    if (pass) {
+                        stageDesc.inFBNames.forEach(inFBName => {
+                            const binding = pass.getBinding(inFBName);
+                            if (binding && binding > -1) {
+                                const sampler = renderer.samplerLib.getSampler(device, samplerHash);
+                                const fb = this.fbMap.get(inFBName);
+                                if (fb) {
+                                    pass.bindTexture(binding, fb.colorTextures[0]!);
+                                    pass.bindSampler(binding, sampler);
+                                }
+                            }
+                        });
+                    }
+                    if (stageDesc.outFBName) {
+                        const fb = this.fbMap.get(stageDesc.outFBName);
+                        if (fb) {
+                            stage.framebuffer = fb;
+                        }
+                    }
+
+                    // if (i == this.stageDescs.length - 1) {
+                    //     stage.framebuffer = null;
+                    // }
                     stage.activate(fpl, ff);
                     ff.stages.push(stage);
-                    stage.mat?.passes[0].update();
-                });
+                    pass?.update();
+                }
 
                 break;
             }
         }
+    }
+
+    private bindingInputTexByName(pass: renderer.Pass) {
+
     }
 
     private generateIA(device: gfx.Device) {
@@ -144,12 +188,31 @@ export class PPMgr extends Component {
         this._quadIA = quadIA;
     }
 
-    private generateFrameBuffer (pl: RenderPipeline) {
-        if (null != this._framebuffer) { return; }
+    private generateFrameBuffers (pl: RenderPipeline) {
+        this.stageDescs.forEach(stageDesc => {
+            stageDesc.inFBNames.forEach(fbName => {
+                this.generateFrameBufferByName(pl, fbName);
+            });
+            if (stageDesc.outFBName) {
+                this.generateFrameBufferByName(pl, stageDesc.outFBName);
+            }
+        });
+    }
 
+    private generateFrameBufferByName(pl : RenderPipeline, fbName: string) {
+        if (this.fbMap.get(fbName)) {
+            return;
+        }
+        const fb = this.generateFrameBuffer(pl);
+        if (fb) {
+            this.fbMap.set(fbName, fb);
+        }
+    }
+
+    private generateFrameBuffer (pl: RenderPipeline): gfx.Framebuffer | null {
         const device = pl.device;
         if (null == device) {
-            return;
+            return null;
         }
         const width = device.width;
         const height = device.height;
@@ -189,6 +252,7 @@ export class PPMgr extends Component {
             depthTex,
         ));
 
+        /*
         const descriptorSet = pl.descriptorSet;
         descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, fb.colorTextures[0]!);
 
@@ -196,7 +260,9 @@ export class PPMgr extends Component {
         descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, sampler);
 
         descriptorSet?.update();
-        this._framebuffer = fb;
+        */
+
+        return fb;
     }
 
     protected destroyQuadInputAssembler () {
