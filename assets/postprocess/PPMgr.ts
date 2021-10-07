@@ -1,5 +1,6 @@
 
-import { _decorator, Component, Director, ForwardFlow, ForwardStage, pipeline, ForwardPipeline, renderer, RenderPipeline, gfx, Material, CCString } from 'cc';
+import { _decorator, Component, Director, ForwardFlow, ForwardStage, pipeline, ForwardPipeline, renderer, RenderPipeline, gfx, Material, CCString, RenderStage } from 'cc';
+import { PPThresholdStage } from '../caseBloom2/PPThresholdStage';
 import { PPBaseStage } from './PPBaseStage';
 const { ccclass, property } = _decorator;
 
@@ -13,13 +14,11 @@ export class PPStageDesc {
     @property(Material)
     mat:    Material | null = null;
 
-    @property([CCString])
-    inFBNames: string[] = [];
-
-    @property()
-    outFBName: string = "";
-
+    @property(CCString)
+    stageName: string = "";
 }
+
+type createPPStage = (stageDesc: PPStageDesc) => PPBaseStage | null;
 
 const _samplerInfo = [
     gfx.Filter.LINEAR,
@@ -38,43 +37,88 @@ export class PPMgr extends Component {
     @property([PPStageDesc])
     stageDescs: PPStageDesc[] = [];
 
+    private static createPPStageCounter = 0;
+    private createPPStageMap: Map<number, createPPStage> = new Map();
     private fbMap: Map<string, gfx.Framebuffer> = new Map();
-
     private _quadIA: gfx.InputAssembler | null = null;
 
-    start () {
-        this.generatePipelineRenderData();
-        this.addPostProcessStage();
+    get pipeline() {
+        const pl = Director.instance.root?.pipeline;
+        if (!pl) { return null; }
+        return pl;
     }
 
-    generatePipelineRenderData() {
-        const pl = Director.instance.root?.pipeline;
-        if (null == pl) {
-            return;
+    get device() {
+        const pl = this.pipeline;
+        if (!pl) { return null; }
+
+        return pl?.device;
+    }
+
+    get samper() {
+        const dev = this.device;
+        if (!dev) { return null; }
+
+        return renderer.samplerLib.getSampler(dev, samplerHash);
+    }
+
+    get flows() {
+        const flows = this.pipeline?.flows;
+        if (!flows) {
+            return null;
         }
+
+        return flows;
+    }
+
+    public init() {
+        const pl = this.pipeline;
+        if (!pl) { return; }
+
         this.generateIA(pl.device);
-        this.generateFrameBuffers(pl);
+        this.replaceScreenFrameBuffer();
+        this.stageDescs.forEach(stageDesc => {
+            this.createPPStageMap.forEach(create => {
+                const stage = create(stageDesc);
+                if (!stage) { return; }
+                this.addStage(stage);
+            });
+        });
     }
 
-    addPostProcessStage() {
-        const pl = Director.instance.root?.pipeline;
-        if (null == pl) {
-            return;
+    public registerCreateStage(cb: createPPStage) {
+        PPMgr.createPPStageCounter++;
+        this.createPPStageMap.set(PPMgr.createPPStageCounter, cb);
+
+        return PPMgr.createPPStageCounter;
+    }
+
+    public createFrameBufferIf(fbName: string): gfx.Framebuffer|null {
+        let fb = this.fbMap.get(fbName);
+        if (fb) { return fb; }
+        const pl = this.pipeline;
+        if (!pl) { return null; }
+        const newfb = this.generateFrameBuffer(pl);
+        if (newfb) {
+            this.fbMap.set(fbName, newfb);
         }
-        if (!(pl instanceof ForwardPipeline)) {
-            return;
-        }
-        if (0 == this.stageDescs.length) {
-            return;
-        }
-        const device = pl.device;
-        const fpl = pl as ForwardPipeline;
-        let flows = pl.flows;
-        if (null == flows) {
-            console.log("ERROR! can't find pipeline flows");
-            return;
-        }
+
+        return newfb;
+    }
+
+    public getFrameBuffer(name: string): gfx.Framebuffer | null {
+        const fb = this.fbMap.get(name);
+        if (!fb) { return null; }
+        return fb;
+    }
+
+    public replaceScreenFrameBuffer() {
+        const flows = this.flows;
+        if (!flows) { return; }
         const self = this;
+        const screenTexName = "screenTex";
+        const fb = this.createFrameBufferIf(screenTexName);
+        if (!fb) { return; }
         for (let flow of flows) {
             if (flow instanceof ForwardFlow) {
                 const ff = flow as ForwardFlow;
@@ -87,7 +131,7 @@ export class PPMgr extends Component {
                         fstage.render = function(camera: renderer.scene.Camera) {
                             const originfb = camera.window?.framebuffer;
                             if (camera.window) {
-                                camera.window._framebuffer = self.fbMap.get("screenTex");
+                                camera.window._framebuffer = self.fbMap.get(screenTexName);
                             }
 
                             originRender.call(fstage, camera);
@@ -98,49 +142,26 @@ export class PPMgr extends Component {
                         break;
                     }
                 }
-
-                for (let i = 0; i < this.stageDescs.length; i++) {
-                    const stageDesc = this.stageDescs[i];
-                    const stage = new PPBaseStage();
-                    stage.mat = stageDesc.mat;
-                    stage.ia = this._quadIA;
-
-                    const pass = stage.mat?.passes[0];
-                    if (pass) {
-                        stageDesc.inFBNames.forEach(inFBName => {
-                            const binding = pass.getBinding(inFBName);
-                            if (binding && binding > -1) {
-                                const sampler = renderer.samplerLib.getSampler(device, samplerHash);
-                                const fb = this.fbMap.get(inFBName);
-                                if (fb) {
-                                    pass.bindTexture(binding, fb.colorTextures[0]!);
-                                    pass.bindSampler(binding, sampler);
-                                }
-                            }
-                        });
-                    }
-                    if (stageDesc.outFBName) {
-                        const fb = this.fbMap.get(stageDesc.outFBName);
-                        if (fb) {
-                            stage.framebuffer = fb;
-                        }
-                    }
-
-                    // if (i == this.stageDescs.length - 1) {
-                    //     stage.framebuffer = null;
-                    // }
-                    stage.activate(fpl, ff);
-                    ff.stages.push(stage);
-                    pass?.update();
-                }
-
                 break;
             }
         }
     }
 
-    private bindingInputTexByName(pass: renderer.Pass) {
+    public addStage(stage: PPBaseStage) {
+        const pl = this.pipeline;
+        if (!pl) { return; }
+        const flows = this.flows;
+        if (!flows) { return; }
 
+        for (let flow of flows) {
+            if (flow instanceof ForwardFlow) {
+                stage.initWithStageDesc(this, pl);
+                stage.ia = this._quadIA;
+                stage.activate(pl, flow);
+                flow.stages.push(stage);
+                break;
+            }
+        }
     }
 
     private generateIA(device: gfx.Device) {
@@ -188,27 +209,6 @@ export class PPMgr extends Component {
         this._quadIA = quadIA;
     }
 
-    private generateFrameBuffers (pl: RenderPipeline) {
-        this.stageDescs.forEach(stageDesc => {
-            stageDesc.inFBNames.forEach(fbName => {
-                this.generateFrameBufferByName(pl, fbName);
-            });
-            if (stageDesc.outFBName) {
-                this.generateFrameBufferByName(pl, stageDesc.outFBName);
-            }
-        });
-    }
-
-    private generateFrameBufferByName(pl : RenderPipeline, fbName: string) {
-        if (this.fbMap.get(fbName)) {
-            return;
-        }
-        const fb = this.generateFrameBuffer(pl);
-        if (fb) {
-            this.fbMap.set(fbName, fb);
-        }
-    }
-
     private generateFrameBuffer (pl: RenderPipeline): gfx.Framebuffer | null {
         const device = pl.device;
         if (null == device) {
@@ -251,16 +251,6 @@ export class PPMgr extends Component {
             clrTexs,
             depthTex,
         ));
-
-        /*
-        const descriptorSet = pl.descriptorSet;
-        descriptorSet?.bindTexture(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, fb.colorTextures[0]!);
-
-        const sampler = renderer.samplerLib.getSampler(device, samplerHash);
-        descriptorSet?.bindSampler(pipeline.UNIFORM_GBUFFER_ALBEDOMAP_BINDING, sampler);
-
-        descriptorSet?.update();
-        */
 
         return fb;
     }

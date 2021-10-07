@@ -6,7 +6,8 @@ CCEffect %{
     - vert: fx-bloom2-threshold-vs:vert # builtin header
       frag: fx-bloom2-threshold-fs:frag
       properties:
-        windowStep:  { value: 0.01, editor: { displayName: window step X size, range: [0, 0.1] } }
+        texSize:    { value: [1, 1]}
+        direction:  { value: [0, 1]}
         tempTex:    { value: white }
 }%
 
@@ -38,26 +39,33 @@ CCProgram fx-bloom2-threshold-fs %{
 
   uniform sampler2D tempTex;
   uniform Constants {
-    float windowStep;
+    vec2 texSize;
+    vec2 direction;
   };
 
   #define WINDOW_SIZE 5.
 
+  float gaussianPdf(in float x, in float sigma) {
+    return 0.39894 * exp( -0.5 * x * x/( sigma * sigma))/sigma;
+  }
+
   vec4 frag () {
-    vec4 col = vec4(0., 0., 0., 0.);
-
-    col += texture(tempTex, v_uv);
-    for (float i = 1.; i <= WINDOW_SIZE; i += 1.) {
-      col += texture(tempTex, v_uv + vec2(i * windowStep, 0.));
-      col += texture(tempTex, v_uv - vec2(i * windowStep, 0.));
-
-      col += texture(tempTex, v_uv + vec2(0., i * windowStep));
-      col += texture(tempTex, v_uv - vec2(0., i * windowStep));
+    vec2 invSize = 1.0 / texSize;
+    float fSigma = 3.0;
+    float weightSum = gaussianPdf(0.0, fSigma);
+    vec3 diffuseSum = texture( tempTex, v_uv).rgb * weightSum;
+    for( int i = 1; i < 3; i++ ) {
+      float x = float(i);
+      float w = gaussianPdf(x, fSigma);
+      vec2 uvOffset = direction * invSize * x;
+      vec3 sample1 = texture( tempTex, v_uv + uvOffset).rgb;
+      vec3 sample2 = texture( tempTex, v_uv - uvOffset).rgb;
+      diffuseSum += (sample1 + sample2) * w;
+      weightSum += 2.0 * w;
     }
 
-    col /= (WINDOW_SIZE * 4. + 1.);
-
-    return CCFragOutput(col);
+    return CCFragOutput(vec4(diffuseSum/weightSum, 1.0));
   }
+
 }%
 
