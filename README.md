@@ -14,11 +14,15 @@
 
 ![内发光](./doc/images/outline1.jpg)
 
-* 外发光 (assets/caseBloom)
+* Bloom辉光 (assets/caseBloom) (Derepcated)
 
-![内发光](./doc/images/bloom1.png)
+![Bloom辉光](./doc/images/bloom1.png)
 
 * 玻璃上的雨滴
 
 ![雨滴](./doc/images/rainOnWindow.gif)
+
+* Bloom辉光2 (assets/caseBloom)
+
+![Bloom辉光2](./doc/images/bloom2.png)
 
