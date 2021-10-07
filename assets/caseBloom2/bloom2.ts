@@ -25,8 +25,6 @@ export class Bloom2 extends Component {
                 stage = new PPBlurYStage();
             } else if ('PPMergeStage' == stageDesc.stageName) {
                 stage = new PPMergeStage();
-            } else {
-                console.log('unknow class name');
             }
 
             if (stage) {

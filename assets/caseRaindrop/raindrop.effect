@@ -6,7 +6,8 @@ CCEffect %{
     - vert: fx-raindrop-vs:vert # builtin header
       frag: unlit-fs:frag
       properties:
-        winSize:  { value: [375.0, 667.0], editor: { displayName: window size } }
+        winSize:      { value: [375.0, 667.0], editor: { displayName: window size } }
+        screenTex:    { value: white }
 }%
 
 CCProgram fx-raindrop-vs %{
@@ -40,8 +41,7 @@ CCProgram unlit-fs %{
 
   in vec2 v_uv;
 
-  #pragma builtin(global)
-  layout(set = 0, binding = 6) uniform sampler2D cc_gbuffer_albedoMap;
+  uniform sampler2D screenTex;
 
 #define DROP_TAILTILE 3.0
 
@@ -82,6 +82,9 @@ CCProgram unlit-fs %{
     rTrail *= smoothstep(-0.01, 0., dropUV.y);
     rTrail *= smoothstep(0.4, 0., dropUV.y);
 
+    // if (cellUV.x > .99 || cellUV.y > .99) rDrop = 1.;
+
+    // return vec2(rDrop + rTrail);
     return vec2(rDrop * dropUV + rTrail * trailUV);
   }
 
@@ -99,7 +102,7 @@ CCProgram unlit-fs %{
     offsetUV += rain(uv, vec2(10., 6.),  0.1);
     offsetUV += rain(uv, vec2(26., 15.),  0.03);
     col += vec4(length(offsetUV));
-    vec4 texCol = texture(cc_gbuffer_albedoMap, v_uv + offsetUV);
+    vec4 texCol = texture(screenTex, v_uv + offsetUV);
     col = texCol;
 
     return CCFragOutput(col);

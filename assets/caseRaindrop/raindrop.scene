@@ -21,7 +21,7 @@
         "__id__": 5
       },
       {
-        "__id__": 9
+        "__id__": 10
       }
     ],
     "_active": true,
@@ -29,7 +29,7 @@
     "_prefab": null,
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 13
+      "__id__": 14
     },
     "_id": "750b24ee-081b-4f9b-a2bc-46e81f04005a"
   },
@@ -122,6 +122,9 @@
       },
       {
         "__id__": 7
+      },
+      {
+        "__id__": 9
       }
     ],
     "_prefab": null,
@@ -215,7 +218,22 @@
     "mat": {
       "__uuid__": "a58aab85-351a-40d5-a229-a538b020ed3e",
       "__expectedType__": "cc.Material"
-    }
+    },
+    "stageName": "PPRaindropStage"
+  },
+  {
+    "__type__": "66ec8iWATVAJ7KQad7hn5XQ",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 5
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "mgr": {
+      "__id__": 7
+    },
+    "_id": "6dS2omkLxLH5H4r+7WH14+"
   },
   {
     "__type__": "cc.Node",
@@ -228,7 +246,7 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 10
+        "__id__": 11
       }
     ],
     "_prefab": null,
@@ -265,11 +283,11 @@
     "_name": "Capsule<ModelComponent>",
     "_objFlags": 0,
     "node": {
-      "__id__": 9
+      "__id__": 10
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 11
+      "__id__": 12
     },
     "_materials": [
       {
@@ -279,7 +297,7 @@
     ],
     "_visFlags": 0,
     "lightmapSettings": {
-      "__id__": 12
+      "__id__": 13
     },
     "_mesh": {
       "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@801ec",
@@ -313,16 +331,16 @@
   {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 14
-    },
-    "shadows": {
       "__id__": 15
     },
-    "_skybox": {
+    "shadows": {
       "__id__": 16
     },
-    "fog": {
+    "_skybox": {
       "__id__": 17
+    },
+    "fog": {
+      "__id__": 18
     }
   },
   {
