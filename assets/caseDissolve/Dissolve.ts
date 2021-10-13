@@ -1,5 +1,5 @@
 
-import { _decorator, Component, MeshRenderer, gfx, renderer } from 'cc';
+import { _decorator, Component, MeshRenderer, gfx, renderer, Material, Texture2D } from 'cc';
 const { ccclass, property } = _decorator;
 
  
@@ -9,11 +9,19 @@ export class Dissolve extends Component {
     @property(MeshRenderer)
     mr: MeshRenderer | null = null;
 
+    @property(Texture2D)
+    txtNoise1: Texture2D | null = null;
+
+    @property(Texture2D)
+    txtNoise2: Texture2D | null = null;
+
     private dissolve: boolean = false;
     private dissolve2: boolean = false;
 
     private dissolveThresholdHandle: number = -1;
     private dissolveThresholdTyeHandle: number = -1;
+    private dissolveType2Handle: number = -1;
+    private dissolveNoiseMapBinding: number = -1;
     private dissolveThreshold: number = 0.0;
 
     start () {
@@ -51,15 +59,18 @@ export class Dissolve extends Component {
         }
     }
 
-    preFetchDissolveThresholdHandle(pass: renderer.Pass) {
+    preFetchHandles(pass: renderer.Pass) {
         if (-1 == this.dissolveThresholdHandle) {
             this.dissolveThresholdHandle = pass.getHandle('dissolveThreshold')
         }
-    }
-
-    preFetchDissolveTypeHandle(pass: renderer.Pass) {
         if (-1 == this.dissolveThresholdTyeHandle) {
             this.dissolveThresholdTyeHandle = pass.getHandle('dissolveOffsetDir', 3, gfx.Type.FLOAT);
+        }
+        if (-1 == this.dissolveType2Handle) {
+            this.dissolveType2Handle = pass.getHandle('dissolveParams2', 0, gfx.Type.FLOAT);
+        }
+        if (-1 == this.dissolveNoiseMapBinding) {
+            this.dissolveNoiseMapBinding = pass.getBinding('dissolveMap');
         }
     }
 
@@ -75,18 +86,22 @@ export class Dissolve extends Component {
 
     onBtnDissolve() {
         this.dissolve = true;
-
         if (this.mr?.materials) {
             let pass = this.mr?.materials[0]?.passes[0];
             if (pass) {
-                this.preFetchDissolveThresholdHandle(pass);
-                this.preFetchDissolveTypeHandle(pass);
-                this.setFetchDissolveType(pass, 0.0);
+                this.preFetchHandles(pass);
+                pass.setUniform(this.dissolveThresholdTyeHandle, 1.0);
+                pass.setUniform(this.dissolveType2Handle, 1.0);
+                pass.bindTexture(this.dissolveNoiseMapBinding, this.txtNoise1?.getGFXTexture()!);
+                pass.update();
             }
 
             pass = this.mr?.materials[1]?.passes[0];
             if (pass) {
-                this.setFetchDissolveType(pass, 0.0);
+                pass.setUniform(this.dissolveThresholdTyeHandle, 1.0);
+                pass.setUniform(this.dissolveType2Handle, 1.0);
+                pass.bindTexture(this.dissolveNoiseMapBinding, this.txtNoise1?.getGFXTexture()!);
+                pass.update();
             }
         }
     }
@@ -96,14 +111,42 @@ export class Dissolve extends Component {
         if (this.mr?.materials) {
             let pass = this.mr?.materials[0]?.passes[0];
             if (pass) {
-                this.preFetchDissolveThresholdHandle(pass);
-                this.preFetchDissolveTypeHandle(pass);
-                this.setFetchDissolveType(pass, 1.0);
+                this.preFetchHandles(pass);
+                pass.setUniform(this.dissolveThresholdTyeHandle, 1.0);
+                pass.setUniform(this.dissolveType2Handle, 0.0);
+                pass.bindTexture(this.dissolveNoiseMapBinding, this.txtNoise2?.getGFXTexture()!);
+                pass.update();
             }
 
             pass = this.mr?.materials[1]?.passes[0];
             if (pass) {
-                this.setFetchDissolveType(pass, 1.0);
+                pass.setUniform(this.dissolveThresholdTyeHandle, 1.0);
+                pass.setUniform(this.dissolveType2Handle, 0.0);
+                pass.bindTexture(this.dissolveNoiseMapBinding, this.txtNoise2?.getGFXTexture()!);
+                pass.update();
+            }
+        }
+    }
+
+    onBtnDissolveExpand() {
+        this.dissolve = true;
+
+        if (this.mr?.materials) {
+            let pass = this.mr?.materials[0]?.passes[0];
+            if (pass) {
+                this.preFetchHandles(pass);
+                pass.setUniform(this.dissolveThresholdTyeHandle, 0.0);
+                pass.setUniform(this.dissolveType2Handle, 0.0);
+                pass.bindTexture(this.dissolveNoiseMapBinding, this.txtNoise2?.getGFXTexture()!);
+                pass.update();
+            }
+
+            pass = this.mr?.materials[1]?.passes[0];
+            if (pass) {
+                pass.setUniform(this.dissolveThresholdTyeHandle, 0.0);
+                pass.setUniform(this.dissolveType2Handle, 0.0);
+                pass.bindTexture(this.dissolveNoiseMapBinding, this.txtNoise2?.getGFXTexture()!);
+                pass.update();
             }
         }
     }

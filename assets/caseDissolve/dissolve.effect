@@ -32,6 +32,7 @@ CCEffect %{
         dissolveOffsetScale: { value: 5.0, target: dissolveParams.z }
         dissolveOffsetThreshold: { value: 0.6, target: dissolveParams.w }
         dissolveOffsetDir: { value: [0.0, 1.0, 0.0, 0.0] }
+        dissolveParams2: { value: [0.0, 0.0, 0.0, 0.0] }
 
       migrations:
         properties:
@@ -117,6 +118,7 @@ CCProgram shared-ubos %{
     vec4 dissolveColor;
     vec4 dissolveParams;
     vec4 dissolveOffsetDir;
+    vec4 dissolveParams2;
 
   };
 }%
@@ -198,7 +200,11 @@ CCProgram standard-vs %{
     posa.xyz += mix(0., 1., dissolveOffsetDir.w) * offsetDir;
     posa.xyz += mix(1., 0., dissolveOffsetDir.w) * normalDir;
 
-    gl_Position = cc_matProj * (cc_matView * matWorld) * posa;
+    vec4 posb = vec4(0.0);
+    posb += mix(1.0, 0.0, dissolveParams2.x) * posa;
+    posb += mix(0.0, 1.0, dissolveParams2.x) * In.position;
+
+    gl_Position = cc_matProj * (cc_matView * matWorld) * posb;
     // gl_Position += vec4(0.0, 10., 0.0, 0.0);
   }
 }%
