@@ -26,3 +26,6 @@
 
 ![Bloom辉光2](./doc/images/bloom2.png)
 
+* Dissolve (assets/caseDissolve)
+
+![Dissolve消融](./doc/images/dissolve1.gif)

@@ -79,11 +79,6 @@ export class Dissolve extends Component {
         pass.update();
     }
 
-    setFetchDissolveType(pass: renderer.Pass, value: number) {
-        pass.setUniform(this.dissolveThresholdTyeHandle, value);
-        pass.update();
-    }
-
     onBtnDissolve() {
         this.dissolve = true;
         if (this.mr?.materials) {
