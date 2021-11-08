@@ -36,7 +36,7 @@ class DecalVertex {
 @ccclass('DecalModel')
 export class DecalModel {
 
-    private mod: renderer.scene.Model | null = null;
+    private meshRenderer: MeshRenderer | null = null;
     private position: Vec3 = new Vec3(0, 0, 0);
     private direction: Vec3 = new Vec3(0, 0, 0);
     private scale: Vec3 = new Vec3(0, 0, 0);
@@ -50,9 +50,9 @@ export class DecalModel {
     private meshNormals: number[] = [];
     private meshUVs: number[] = [];
 
-    static create(decalTemplate: Node, m: renderer.scene.Model, p: Vec3, d: Vec3, s: Vec3): Node {
+    static create(decalTemplate: Node, mr: MeshRenderer, p: Vec3, d: Vec3, s: Vec3): Node {
         const dm = new DecalModel();
-        dm.mod = m;
+        dm.meshRenderer = mr;
         dm.position = p;
         dm.direction = d;
         dm.scale = s;
@@ -62,10 +62,9 @@ export class DecalModel {
         n.name = "Decal";
         n.active = true;
         n.scale = s;
-        Vec3.transformMat4(n.position, p, dm.worldMat);
-
-        const mr = n.getComponent(MeshRenderer);
-        mr?.material?.setProperty('albedo', new Color(random()*255, random()*255, random()*255));
+        // Vec3.transformMat4(n.position, p, dm.worldMat);
+        n.setWorldPosition(p);
+        n.getComponent(MeshRenderer)?.material?.setProperty('albedo', new Color(random()*255, random()*255, random()*255));
 
         // mr?.mesh?.reset(utils.createMesh({
         //     primitiveMode: gfx.PrimitiveMode.TRIANGLE_STRIP,
@@ -85,33 +84,39 @@ export class DecalModel {
     generate() {
         Mat4.lookAt(this.projectorMatrix, this.position, this.position.add(this.direction), Vec3.ONE);
         Mat4.invert(this.projectorMatInverse, this.projectorMatrix);
-        if (this.mod) {
-            this.worldMat = this.mod.transform.worldMatrix;
-        }
-
-        if (null == this.mod) {
+        if (!this.meshRenderer) {
             return;
         }
-        for(const subMod of this.mod.subModels) {
-            const posArr = subMod.subMesh.mesh?.readAttribute(subMod.subMesh.subMeshIdx!, gfx.AttributeName.ATTR_POSITION) as unknown as Float32Array;
-            const norArr = subMod.subMesh.mesh?.readAttribute(subMod.subMesh.subMeshIdx!, gfx.AttributeName.ATTR_NORMAL) as unknown as Float32Array;
+        this.worldMat = this.meshRenderer.node.worldMatrix;
+        const mo = this.meshRenderer.model;
+        const me = this.meshRenderer.mesh;
+        if (!me || !mo) { return; }
 
-            if (posArr.length != norArr.length) {
-                console.log('ERROR, position array length is not same with normal');
-            }
-            for (let idx = 0; idx < posArr.length; idx+=3) {
-                this.appendDecalVertex(
-                    new Vec3(posArr[idx], posArr[idx+1], posArr[idx+2]),
-                    new Vec3(norArr[idx], norArr[idx+1], norArr[idx+2]));
+        const vp = new Vec3();
+        const vn = new Vec3();
+        let vpos = 0;
+        for (let i = 0; i < me.subMeshCount; i++) {
+            const pos = me.renderingSubMeshes[i].geometricInfo.positions;
+            const normals = me.readAttribute(i, gfx.AttributeName.ATTR_NORMAL);
+            if (pos.length != normals?.length) { break; }
+
+            // const idxs = me.renderingSubMeshes[i].geometricInfo.indices;
+            for (let j = 0; j < pos.length; j++) {
+                vpos = j * 3;
+                vp.set(pos[vpos], pos[vpos + 1], pos[vpos + 2]);
+                Vec3.transformMat4(vp, vp, mo.node.worldMatrix);
+                vn.set(normals[vpos], normals[vpos + 1], normals[vpos + 2]);
+
+                this.appendDecalVertex(vp.clone(), vn.clone());
             }
         }
 
-        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 1, 0, 0 ));
-        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3(-1, 0, 0 ));
-        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 0, 1, 0 ));
-        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 0,-1, 0 ));
-        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 0, 0, 1 ));
-        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 0, 0,-1 ));
+        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 0.1, 0, 0 ));
+        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3(-0.1, 0, 0 ));
+        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 0, 0.1, 0 ));
+        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 0,-0.1, 0 ));
+        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 0, 0, 0.1 ));
+        this.decalVertexes = this.clipGeometry(this.decalVertexes, new Vec3( 0, 0,-0.1 ));
 
         for ( let i = 0; i < this.decalVertexes.length; i ++ ) {
 

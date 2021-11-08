@@ -1,5 +1,5 @@
 
-import { _decorator, Component, systemEvent, SystemEvent, EventTouch, Touch, geometry, Camera, MeshRenderer, gfx, Vec3, find, Node, TERRAIN_HEIGHT_BASE } from 'cc';
+import { _decorator, Component, systemEvent, SystemEvent, EventTouch, Touch, geometry, Camera, MeshRenderer, gfx, Vec3, find, Node, TERRAIN_HEIGHT_BASE, random } from 'cc';
 import { DecalModel } from './DecalModel';
 const { ccclass, property } = _decorator;
  
@@ -83,8 +83,9 @@ export class Main extends Component {
 
             const position = new Vec3();
             const normal = new Vec3();
-            if (1 == me.subMeshCount) {
-                const pos = me.renderingSubMeshes[0].geometricInfo.positions;
+            if (me.subMeshCount > 0) {
+                const subIdx = s[0];
+                const pos = me.renderingSubMeshes[subIdx].geometricInfo.positions;
 
                 const pa = new Vec3();
                 let posIndex = r[0].vertexIndex0 * 3;
@@ -106,7 +107,7 @@ export class Main extends Component {
                 position.add(pc);
                 position.divide3f(3, 3, 3);
 
-                const normals = me.readAttribute(s[0], gfx.AttributeName.ATTR_TEX_COORD);
+                const normals = me.readAttribute(s[0], gfx.AttributeName.ATTR_NORMAL);
                 if (normals) {
                     const na = new Vec3();
                     let nIdx = r[0].vertexIndex0 * 3;
@@ -137,9 +138,9 @@ export class Main extends Component {
             // const norArr = mesh?.readAttribute(subMod.subMesh.subMeshIdx!, gfx.AttributeName.ATTR_NORMAL) as unknown as Float32Array;
             // const nor = new Vec3(norArr[rst.vertexIndex0], norArr[rst.vertexIndex1], norArr[rst.vertexIndex2]);
 
-            this.decalRoot?.addChild(DecalModel.create(this.decalTemplate, mr.model, position, normal, new Vec3(1, 1, 1)));
-            // console.log(pos);
-            // console.log(nor);
+            this.decalRoot?.addChild(DecalModel.create(
+                this.decalTemplate, mr, position, normal,
+                new Vec3(1, 1, 1)));
         } else {
             console.log('model not touched');
             console.log('children length: ' + this.decalRoot?.children.length);
