@@ -1,33 +1,26 @@
 
-import { _decorator, Sprite, director } from 'cc';
-import { MTBatcher2D } from './MTBatcher2D';
+import { _decorator, Sprite, Component } from 'cc';
+import { MTTex } from './MTTex';
 const { ccclass, property } = _decorator;
-
  
 @ccclass('MTSprite')
-export class MTSprite extends Sprite {
+export class MTSprite extends Component {
 
     start () {
-        if (director.root) {
-            MTBatcher2D.getInstance().hackBatch2d(director.root.batcher2D);
-            this.loadTextureBindings();
-        }
+        this.tagAsMTSprite();
     }
 
-    loadTextureBindings() {
-        if (null == this.customMaterial) {
+    tagAsMTSprite() {
+        const sp = this.getComponent(Sprite);
+        if (null == sp) {
             return;
         }
-        const pass = this.customMaterial?.passes[0];
-        const mtTexBindingMap = new Map<string, number>();
-        for (let i = 1; i < 8; i++) {
-            const name = 'spriteTexture' + i;
-            const binding = pass.getBinding(name);
-            if (binding >= 0) {
-                mtTexBindingMap.set(name, binding);
-            }
+        const mtTex = MTTex.getInstance();
+        if (null == mtTex) {
+            return;
         }
-        MTBatcher2D.getInstance().setTexturesBindingMap(mtTexBindingMap);
+        sp._isMTSprite = true;
+        sp.customMaterial = mtTex.mtMat;
     }
 
 }

@@ -1,6 +1,5 @@
 
-import { _decorator, Node, UI, Renderable2D, SpriteFrame, StencilManager, gfx, Color } from 'cc';
-import { MTSprite } from './MTSprite';
+import { _decorator, Node, UI, Renderable2D, SpriteFrame, StencilManager, gfx, Color, Sprite } from 'cc';
 
 export class MTBatcher2D {
 
@@ -100,7 +99,7 @@ export class MTBatcher2D {
         batcher.mtBatcher = mtBatcher;
 
         const origin_getDescriptorSet = batcher._descriptorSetCache.getDescriptorSet;
-        batcher._descriptorSetCache.getDescriptorSet = function(batch) {
+        batcher._descriptorSetCache.getDescriptorSet = function(batch: any) {
             const ds = origin_getDescriptorSet.call(this, batch);
             if (batch.fromMTSprite) {
                 const pass = batch.passes[0];
@@ -129,7 +128,8 @@ export class MTBatcher2D {
             if (newLength === originLength) {
                 return;
             }
-            this._batches.get(newLength-1).fromMTSprite = (renderComp instanceof MTSprite);
+            const isMTSprite: boolean = renderComp._isMTSprite || false;
+            this._batches.get(newLength-1).fromMTSprite = isMTSprite;
         }
     }
 
@@ -157,7 +157,7 @@ export class MTBatcher2D {
         const depthStencilStateStage = renderComp.stencilStage;
 
         const mtBatcher = this.mtBatcher as any as MTBatcher2D
-        const isMTSprite = comp instanceof MTSprite;
+        const isMTSprite: boolean = comp._isMTSprite || false;
 
         if (this._currScene !== renderScene
             || this._currLayer !== comp.node.layer
@@ -190,8 +190,8 @@ export class MTBatcher2D {
         }
 
         if (isMTSprite) {
-            const mtSprite = comp as MTSprite;
-            mtSprite.color = new Color(mtBatcher.getTexturesIdx(textureHash));
+            const sp = comp as Sprite;
+            sp.color = new Color(mtBatcher.getTexturesIdx(textureHash));
         }
         if (assembler) {
             assembler.fillBuffers(renderComp, this);

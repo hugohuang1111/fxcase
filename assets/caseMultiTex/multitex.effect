@@ -17,13 +17,6 @@ CCEffect %{
         cullMode: none
       properties:
         alphaThreshold: { value: 0.5 }
-        spriteTexture1: { value: grey }
-        spriteTexture2: { value: white }
-        spriteTexture3: { value: white }
-        spriteTexture4: { value: white }
-        spriteTexture5: { value: white }
-        spriteTexture6: { value: white }
-        spriteTexture7: { value: white }
 }%
 
 CCProgram sprite-vs %{
@@ -78,15 +71,16 @@ CCProgram sprite-fs %{
     in vec2 uv0;
     #pragma builtin(local)
     layout(set = 2, binding = 10) uniform sampler2D cc_spriteTexture;
-  #endif
 
-  uniform sampler2D spriteTexture1;
-  uniform sampler2D spriteTexture2;
-  uniform sampler2D spriteTexture3;
-  uniform sampler2D spriteTexture4;
-  uniform sampler2D spriteTexture5;
-  uniform sampler2D spriteTexture6;
-  uniform sampler2D spriteTexture7;
+    uniform sampler2D spriteTexture1;
+    uniform sampler2D spriteTexture2;
+    uniform sampler2D spriteTexture3;
+    uniform sampler2D spriteTexture4;
+    uniform sampler2D spriteTexture5;
+    uniform sampler2D spriteTexture6;
+    uniform sampler2D spriteTexture7;
+
+  #endif
 
 
   float getCalVal(float texID) {
@@ -99,25 +93,6 @@ CCProgram sprite-fs %{
     #if USE_TEXTURE
       float texID = color.x * 255.;
 
-/*
-      if (texID == 0.0) {
-        o *= texture(cc_spriteTexture, uv0);
-      } else if (texID == 1.0) {
-        o *= texture(cc_spriteTexture2, uv0);
-      } else if (texID == 2.0) {
-        o *= texture(cc_spriteTexture3, uv0);
-      } else if (texID == 3.0) {
-        o *= texture(cc_spriteTexture4, uv0);
-      } else if (texID == 4.0) {
-        o *= texture(cc_spriteTexture5, uv0);
-      } else if (texID == 5.0) {
-        o *= texture(cc_spriteTexture6, uv0);
-      } else if (texID == 6.0) {
-        o *= texture(cc_spriteTexture7, uv0);
-      } else if (texID == 7.0) {
-        o *= texture(cc_spriteTexture8, uv0);
-      }
-*/
       o = vec4(0., 0., 0., 0.);
       o += getCalVal(texID) * CCSampleWithAlphaSeparated(cc_spriteTexture,  uv0);
       texID -= 1.;
@@ -135,16 +110,9 @@ CCProgram sprite-fs %{
       texID -= 1.;
       o += getCalVal(texID) * CCSampleWithAlphaSeparated(spriteTexture7, uv0);
 
-
-
-      #if IS_GRAY
-        // float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
-        // o.r = o.g = o.b = gray;
-      #endif
     #endif
 
-    // o *= color;
-    // ALPHA_TEST(o);
+    ALPHA_TEST(o);
     return o;
   }
 }%
