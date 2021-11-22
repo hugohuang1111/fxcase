@@ -1065,7 +1065,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "ui_add",
+    "_name": "ui_attention",
     "_objFlags": 0,
     "_parent": {
       "__id__": 8
@@ -1110,7 +1110,7 @@
       "y": 0,
       "z": 0
     },
-    "_id": "a6bmQITLNFvq7f8WCM6EcH"
+    "_id": "b7kbVE0PBGj4pkOgVtBasv"
   },
   {
     "__type__": "cc.UITransform",
@@ -1131,7 +1131,7 @@
       "x": 0.5,
       "y": 0.5
     },
-    "_id": "9536RqWyJO+7KWZ03u3G8T"
+    "_id": "79GKMpGnFDVqkzWxoQIcmQ"
   },
   {
     "__type__": "de746r7jz9C+YVEorsdpA4s",
@@ -1142,7 +1142,7 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "_id": "aagxA9MO9C/aCNJQ9SrL9K"
+    "_id": "b0/q/9YTlMibYYcy9HsCLz"
   },
   {
     "__type__": "cc.Sprite",
@@ -1165,7 +1165,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "b0422c65-2397-4343-bd7d-888c7ae763b5@3f502",
+      "__uuid__": "b0422c65-2397-4343-bd7d-888c7ae763b5@4d903",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -1181,7 +1181,7 @@
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
-    "_id": "70hFMAitBFaJYoi3u4yys9"
+    "_id": "1694C7qrpP7rkIFrWWK4k8"
   },
   {
     "__type__": "cc.Node",
@@ -1305,7 +1305,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "ui_attention",
+    "_name": "ui_add",
     "_objFlags": 0,
     "_parent": {
       "__id__": 8
@@ -1350,7 +1350,7 @@
       "y": 0,
       "z": 0
     },
-    "_id": "b7kbVE0PBGj4pkOgVtBasv"
+    "_id": "a6bmQITLNFvq7f8WCM6EcH"
   },
   {
     "__type__": "cc.UITransform",
@@ -1371,7 +1371,7 @@
       "x": 0.5,
       "y": 0.5
     },
-    "_id": "79GKMpGnFDVqkzWxoQIcmQ"
+    "_id": "9536RqWyJO+7KWZ03u3G8T"
   },
   {
     "__type__": "de746r7jz9C+YVEorsdpA4s",
@@ -1382,7 +1382,7 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "_id": "b0/q/9YTlMibYYcy9HsCLz"
+    "_id": "aagxA9MO9C/aCNJQ9SrL9K"
   },
   {
     "__type__": "cc.Sprite",
@@ -1405,7 +1405,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "b0422c65-2397-4343-bd7d-888c7ae763b5@4d903",
+      "__uuid__": "b0422c65-2397-4343-bd7d-888c7ae763b5@3f502",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -1421,7 +1421,7 @@
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
-    "_id": "1694C7qrpP7rkIFrWWK4k8"
+    "_id": "70hFMAitBFaJYoi3u4yys9"
   },
   {
     "__type__": "cc.UITransform",
