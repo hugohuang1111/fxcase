@@ -33,9 +33,9 @@
     {
       "mainColor": {
         "__type__": "cc.Color",
-        "r": 235,
-        "g": 53,
-        "b": 53,
+        "r": 173,
+        "g": 84,
+        "b": 84,
         "a": 255
       },
       "mainTexture": {
