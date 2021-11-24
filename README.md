@@ -29,3 +29,12 @@
 * Dissolve (assets/caseDissolve)
 
 ![Dissolve消融](./doc/images/dissolve1.gif)
+
+* MultiTex (assets/caseMultiTex)
+
+合批支持多纹理
+
+* Decals (assets/caseDecals/method2)
+
+![Decals贴花](./doc/images/decal.gif)
+
