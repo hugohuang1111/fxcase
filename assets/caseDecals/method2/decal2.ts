@@ -1,6 +1,6 @@
 
 import { _decorator, Component, systemEvent, SystemEvent, EventTouch, Touch, geometry, Camera, MeshRenderer, gfx, Vec3, find, Node, Mat4, Mat3, Vec4, Quat, Material, random } from 'cc';
-import { DecalMeshRenderer } from './DecalMesh';
+import { DecalMeshRenderer } from './DecalMeshRenderer';
 const { ccclass, property } = _decorator;
  
 @ccclass('Decal2')
