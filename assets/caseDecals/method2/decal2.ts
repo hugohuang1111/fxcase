@@ -12,6 +12,9 @@ export class Decal2 extends Component {
     @property(Material)
     decalMaterial: Material | null = null;
 
+    @property(Node)
+    debugCube: Node | null = null;
+
     private meshRenderer: MeshRenderer | null = null;
     private isTouchMove: boolean = false;
     private _ray = new geometry.Ray();
@@ -153,8 +156,15 @@ export class Decal2 extends Component {
             return false;
         }
 
+        if (this.debugCube) {
+            this.debugCube.setWorldPosition(position);
+            this.debugCube.removeFromParent();
+            this.node.addChild(this.debugCube);
+        }
+
         const dmr = this.addComponent(DecalMeshRenderer);
-        const scale = new Vec3(0.4, 0.4, 20);
+        const scale = new Vec3(0.5, 0.5, 4);
+        projectorEye.subtract(position).normalize().add(position);
         dmr?.genDecalMesh(this.node, me, projectorEye, position, normal, scale);
         if (dmr && this.decalMaterial) {
             const newMat = new Material();
