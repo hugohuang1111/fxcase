@@ -96,7 +96,6 @@ export class DecalMeshRenderer extends MeshRenderer {
             }
         }
 
-        // clip vertex
         this.decalVertexes = this.clipGeometrylByPlane(this.decalVertexes, new Vec3( 1, 0, 0 ), this.scale.x/2);
         this.decalVertexes = this.clipGeometrylByPlane(this.decalVertexes, new Vec3(-1, 0, 0 ), this.scale.x/2);
         this.decalVertexes = this.clipGeometrylByPlane(this.decalVertexes, new Vec3( 0, 1, 0 ), this.scale.y/2);
@@ -113,8 +112,6 @@ export class DecalMeshRenderer extends MeshRenderer {
 
             const decalVertex = this.decalVertexes[ i ];
 
-            // create texture coordinates (we are still in projector space)
-
             decalVertex.uv = new Vec2(
                 0.5 + ( decalVertex.viewPos.x / this.scale.x ),
                 0.5 + ( decalVertex.viewPos.y / this.scale.y )
@@ -125,14 +122,6 @@ export class DecalMeshRenderer extends MeshRenderer {
             this.meshPositions.push( decalVertex.modelPos.x, decalVertex.modelPos.y, decalVertex.modelPos.z );
             this.meshNormals.push( decalVertex.normal.x, decalVertex.normal.y, decalVertex.normal.z );
             this.meshUVs.push( decalVertex.uv.x, decalVertex.uv.y );
-        }
-
-        console.log(`vertex length: ${this.decalVertexes.length}`);
-        for ( let i = 0; i < this.decalVertexes.length && i < 10; i ++ ) {
-            const decalVertex = this.decalVertexes[i];
-            const pos = decalVertex.viewPos;
-            const uv = decalVertex.uv;
-            console.log(`Pos: (${pos.x},${pos.y},${pos.z}) => UV: (${uv.x}, ${uv.y})`);
         }
 
         const geo = {
@@ -147,9 +136,7 @@ export class DecalMeshRenderer extends MeshRenderer {
             ],
         };
 
-        // this.mesh = utils.createMesh(primitives.wireframed(geo as any));
         this.mesh = utils.createMesh(geo, undefined, { calculateBounds: false });
-
     }
 
     clipLineByPlane(p0: Vec3, p1: Vec3, planeN: Vec3, planeD: number): Vec3[] {

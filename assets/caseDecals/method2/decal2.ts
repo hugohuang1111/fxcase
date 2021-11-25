@@ -145,7 +145,6 @@ export class Decal2 extends Component {
 
     addDecal(position: Vec3, normal: Vec3) {
         position.transformMat4(this.node.worldMatrix);
-        // console.log(`World position: (${position.x}, ${position.y}, ${position.z})`);
         const projectorEye = this.mainCamera?.node.worldPosition;
         if (null == projectorEye) {
             return;
