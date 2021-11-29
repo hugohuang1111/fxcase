@@ -418,7 +418,14 @@ CCProgram fx-outline-vs %{
     scNormal = In.normal;
     vec4 pos = In.position;
     pos.w = 1.;
-    pos.xyz += In.normal * outlineParams.z;
+
+    // way A: move position by normal
+    // pos.xyz += In.normal * outlineParams.z;
+
+    // way B: move position by position dir, this is good for cube
+    // thanks to @flybin
+    vec3 posDir = normalize(pos.xyz);
+    pos.xyz += posDir * outlineParams.z;
 
     mat4 matWorld, matWorldIT;
     CCGetWorldMatrixFull(matWorld, matWorldIT);
