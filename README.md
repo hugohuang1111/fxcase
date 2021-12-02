@@ -24,17 +24,16 @@
 
 * Bloom辉光2 (assets/caseBloom)
 
-![Bloom辉光2](./doc/images/bloom2.png)
+![Bloom辉光2](./doc/images/bloom2.gif)
 
 * Dissolve (assets/caseDissolve)
 
 ![Dissolve消融](./doc/images/dissolve1.gif)
 
-* MultiTex (assets/caseMultiTex)
+* 合批支持多纹理 MultiTex (assets/caseMultiTex)
 
-合批支持多纹理
 
-* Decals (assets/caseDecals/method2)
+* Decals 贴花 (assets/caseDecals/method2)
 
 ![Decals贴花](./doc/images/decal.gif)
 
